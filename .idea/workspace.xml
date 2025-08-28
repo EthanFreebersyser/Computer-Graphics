@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ChangeListManager">
+    <list default="true" id="33ceb0d7-3213-4b93-ae35-3944e5ff9234" name="Changes" comment="">
+      <change beforePath="$PROJECT_DIR$/.idea/.gitignore" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/Computer Grapics.iml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/modules.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Homework 0/.gitignore" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Homework 0/.prettierrc" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Homework 0/index.html" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Homework 0/package-lock.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Homework 0/package.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Homework 0/public/background.svg" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Homework 0/public/fonts/JetBrainsMono-Regular.woff2" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Homework 0/public/fonts/JetBrainsSans-Regular.woff2" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Homework 0/public/javascript.svg" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Homework 0/public/style.css" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Homework 0/public/technologies.svg" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Homework 0/public/webstorm-icon-logo.svg" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Homework 0/public/webstorm-logo.svg" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Homework 0/src/main.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Homework 0/src/vite-env.d.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Homework 0/tsconfig.json" beforeDir="false" />
+    </list>
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+  </component>
+  <component name="GitHubPullRequestSearchHistory"><![CDATA[{
+  "lastFilter": {
+    "state": "OPEN",
+    "assignee": "EthanFreebersyser"
+  }
+}]]></component>
+  <component name="GithubPullRequestsUISettings"><![CDATA[{
+  "selectedUrlAndAccountId": {
+    "url": "https://github.com/EthanFreebersyser/Computer-Graphics.git",
+    "accountId": "966f5492-7075-4e4e-8840-ad0135b9514d"
+  }
+}]]></component>
+  <component name="ProjectColorInfo">{
+  &quot;associatedIndex&quot;: 4
+}</component>
+  <component name="ProjectId" id="31v4qt0ogobbE8NitZnXWQ21c4v" />
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "ModuleVcsDetector.initialDetectionPerformed": "true",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "RunOnceActivity.git.unshallow": "true",
+    "git-widget-placeholder": "develop",
+    "last_opened_file_path": "C:/Users/etrep/Documents/Computer Graphics",
+    "nodejs_package_manager_path": "npm",
+    "vue.rearranger.settings.migration": "true"
+  }
+}]]></component>
+  <component name="SharedIndexes">
+    <attachedChunks>
+      <set>
+        <option value="bundled-js-predefined-d6986cc7102b-e03c56caf84a-JavaScript-WS-252.23892.411" />
+      </set>
+    </attachedChunks>
+  </component>
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="33ceb0d7-3213-4b93-ae35-3944e5ff9234" name="Changes" comment="" />
+      <created>1756391405370</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1756391405370</updated>
+      <workItem from="1756391406639" duration="258000" />
+      <workItem from="1756393156006" duration="127000" />
+    </task>
+    <servers />
+  </component>
+  <component name="TypeScriptGeneratedFilesManager">
+    <option name="version" value="3" />
+  </component>
+</project>
