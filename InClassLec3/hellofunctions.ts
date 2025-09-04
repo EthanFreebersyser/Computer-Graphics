@@ -34,9 +34,14 @@ function makeTriangleAndBuffer(){
 
     //create three vertices and add to local array
     //we haven't discussed projection. so stay between -1 to 1
-    trianglePoints.push(new vec4(-0.5, -0.5, 0.0, 1.0));
-    trianglePoints.push(new vec4(0, 0.5, 0.0, 1.0));
-    trianglePoints.push(new vec4(0.5, -0.5, 0.0, 1.0));
+    trianglePoints.push(new vec4(-0.5, -0.5, 0.0, 1.0)); //vertex 1
+    trianglePoints.push(new vec4(1, 0, 0, 1));  //opaque red
+
+    trianglePoints.push(new vec4(0, 0.5, 0.0, 1.0)); //vertex 2
+    trianglePoints.push(new vec4(0, 1, 0, 1)); // opaque green
+
+    trianglePoints.push(new vec4(0.5, -0.5, 0.0, 1.0)); //vertex 3
+    trianglePoints.push(new vec4(0, 0, 1, 1)); // opaque blue
 
     //get some graphics card memory
     bufferId = gl.createBuffer();
@@ -46,10 +51,19 @@ function makeTriangleAndBuffer(){
     //flatten converts to ID array
     gl.bufferData(gl.ARRAY_BUFFER, flatten(trianglePoints), gl.STATIC_DRAW);
 
+    //Data is packed in groups of 4 floats which are 4 bytes each, 32 bytes total for position and color
+    // position             color
+    // x    y    z    w       r     g     b     a
+    // 0-3 4-7 8-11 12-15   16-19 20-23 24-27 28-31
+
     //tell openGl what the data means
     let vPosition:GLint = gl.getAttribLocation(program, "vPosition");
-    gl.vertexAttribPointer(vPosition, 4, gl.FLOAT, false, 0, 0);
+    gl.vertexAttribPointer(vPosition, 4, gl.FLOAT, false, 32, 0);
     gl.enableVertexAttribArray(vPosition);
+
+    let vColor:GLint = gl.getAttribLocation(program, "vColor");
+    gl.vertexAttribPointer(vColor, 4, gl.FLOAT, false, 32, 16);
+    gl.enableVertexAttribArray(vColor);
 }
 
 function render(){

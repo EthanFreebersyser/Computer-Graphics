@@ -5,15 +5,19 @@
     <title>Hello!</title>
     <script id="vertex-shader" type="x-shader/x-vertex">#version 300 es
         in vec4 vPosition;
+        in vec4 vColor; //we have a second attrub now!
+        out vec4 color; //send it out so it goes to frag shader
         void main() {
+            color = vColor;
             gl_Position = vPosition;
         }
     </script>
     <script id="fragment-shader" type="x-shader/x-fragment">#version 300 es
         precision mediump float;
+        in vec4 color; //use same name and type as the vertex shader out
         out vec4 fragColor;
         void main() {
-            fragColor = vec4(1.0, 1.0, 1.0, 1.0);
+            fragColor = color;
         }
     </script>
     <script type = "module" src = "hellofunctions.js"></script>
