@@ -2,28 +2,33 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Hello!</title>
+    <title>Target Shooter!</title>
     <script id="vertex-shader" type="x-shader/x-vertex">#version 300 es
         in vec4 vPosition;
-        in vec4 vColor; //we have a second attrub now!
-        out vec4 color; //send it out so it goes to frag shader
+        in vec4 vColor;
+        out vec4 color;
         void main() {
             color = vColor;
             gl_Position = vPosition;
         }
     </script>
+
     <script id="fragment-shader" type="x-shader/x-fragment">#version 300 es
         precision mediump float;
-        in vec4 color; //use same name and type as the vertex shader out
+        in vec4 color;
         out vec4 fragColor;
         void main() {
             fragColor = color;
         }
     </script>
+
     <script type = "module" src = "hellofunctions.js"></script>
 </head>
 <body>
-<div>This is close to the bare minimum of code to get a WebGL program going</div>
+    <header>
+    <div id="feedback">Move mouse to aim. Click to shoot. Press 'm' to toggle motion.</div>
+    <button id="resetBtn" type="button">Reset</button>
+    </header>
 <canvas id = "gl-canvas" width="512" height="512">
     Sorry; your web browser doesn't support HTML5's canvas element.
 </canvas>
