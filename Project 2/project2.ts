@@ -34,7 +34,7 @@ window.onload = function init() {
 
     //TODO initialize various animation parameters
 
-    //TODO Add call to keyboard listener
+    window.addEventListener("keydown", keyDownListener);
 
     makeGroundWheelBodyBuffer();
 
@@ -48,8 +48,12 @@ window.onload = function init() {
     window.setInterval(update, 16); //target 60 frames per second
 };
 
-//TODO keyboard listener
-
+function keyDownListener(event:KeyboardEvent) {
+    switch (event.key) {
+        case " ":
+            break;
+    }
+}
 
 //adds the ground, wheel and car body to the buffer and send to graphics card
 function makeGroundWheelBodyBuffer(){
@@ -171,10 +175,92 @@ function makeGroundWheelBodyBuffer(){
 
     //<editor-fold desc="body pts">
     //start body ?-?
-        let bodyPts:vec4[] = [];
-        //TODO add pts
+        let cubepoints:vec4[] = [];
+        //front face = 6 verts, position then color
+        cubepoints.push(new vec4(1.0, -1.0, 1.0, 1.0));
+        cubepoints.push(new vec4(0.0, 1.0, 1.0, 1.0)); //cyan
+        cubepoints.push(new vec4(1.0, 1.0, 1.0, 1.0));
+        cubepoints.push(new vec4(0.0, 1.0, 1.0, 1.0)); //cyan
+        cubepoints.push(new vec4(-1.0, 1.0, 1.0, 1.0));
+        cubepoints.push(new vec4(0.0, 1.0, 1.0, 1.0)); //cyan
+        cubepoints.push(new vec4(-1.0, 1.0, 1.0, 1.0));
+        cubepoints.push(new vec4(0.0, 1.0, 1.0, 1.0)); //cyan
+        cubepoints.push(new vec4(-1.0, -1.0, 1.0, 1.0));
+        cubepoints.push(new vec4(0.0, 1.0, 1.0, 1.0)); //cyan
+        cubepoints.push(new vec4(1.0, -1.0, 1.0, 1.0));
+        cubepoints.push(new vec4(0.0, 1.0, 1.0, 1.0)); //cyan
 
-        for (let pt of bodyPts) {
+        //back face
+        cubepoints.push(new vec4(-1.0, -1.0, -1.0, 1.0));
+        cubepoints.push(new vec4(1.0, 0.0, 1.0, 1.0)); //magenta
+        cubepoints.push(new vec4(-1.0, 1.0, -1.0, 1.0));
+        cubepoints.push(new vec4(1.0, 0.0, 1.0, 1.0));//magenta
+        cubepoints.push(new vec4(1.0, 1.0, -1.0, 1.0));
+        cubepoints.push(new vec4(1.0, 0.0, 1.0, 1.0));//magenta
+        cubepoints.push(new vec4(1.0, 1.0, -1.0, 1.0));
+        cubepoints.push(new vec4(1.0, 0.0, 1.0, 1.0));//magenta
+        cubepoints.push(new vec4(1.0, -1.0, -1.0, 1.0));
+        cubepoints.push(new vec4(1.0, 0.0, 1.0, 1.0));//magenta
+        cubepoints.push(new vec4(-1.0, -1.0, -1.0, 1.0));
+        cubepoints.push(new vec4(1.0, 0.0, 1.0, 1.0));//magenta
+
+        //left face
+        cubepoints.push(new vec4(1.0, 1.0, 1.0, 1.0));
+        cubepoints.push(new vec4(1.0, 1.0, 0.0, 1.0)); //yellow
+        cubepoints.push(new vec4(1.0, -1.0, 1.0, 1.0));
+        cubepoints.push(new vec4(1.0, 1.0, 0.0, 1.0)); //yellow
+        cubepoints.push(new vec4(1.0, -1.0, -1.0, 1.0));
+        cubepoints.push(new vec4(1.0, 1.0, 0.0, 1.0)); //yellow
+        cubepoints.push(new vec4(1.0, -1.0, -1.0, 1.0));
+        cubepoints.push(new vec4(1.0, 1.0, 0.0, 1.0)); //yellow
+        cubepoints.push(new vec4(1.0, 1.0, -1.0, 1.0));
+        cubepoints.push(new vec4(1.0, 1.0, 0.0, 1.0)); //yellow
+        cubepoints.push(new vec4(1.0, 1.0, 1.0, 1.0));
+        cubepoints.push(new vec4(1.0, 1.0, 0.0, 1.0)); //yellow
+
+        //right face
+        cubepoints.push(new vec4(-1.0, 1.0, -1.0, 1.0));
+        cubepoints.push(new vec4(1.0, 0.0, 0.0, 1.0)); //red
+        cubepoints.push(new vec4(-1.0, -1.0, -1.0, 1.0));
+        cubepoints.push(new vec4(1.0, 0.0, 0.0, 1.0)); //red
+        cubepoints.push(new vec4(-1.0, -1.0, 1.0, 1.0));
+        cubepoints.push(new vec4(1.0, 0.0, 0.0, 1.0)); //red
+        cubepoints.push(new vec4(-1.0, -1.0, 1.0, 1.0));
+        cubepoints.push(new vec4(1.0, 0.0, 0.0, 1.0)); //red
+        cubepoints.push(new vec4(-1.0, 1.0, 1.0, 1.0));
+        cubepoints.push(new vec4(1.0, 0.0, 0.0, 1.0)); //red
+        cubepoints.push(new vec4(-1.0, 1.0, -1.0, 1.0));
+        cubepoints.push(new vec4(1.0, 0.0, 0.0, 1.0)); //red
+
+        //top
+        cubepoints.push(new vec4(1.0, 1.0, 1.0, 1.0));
+        cubepoints.push(new vec4(0.0, 0.0, 1.0, 1.0)); //blue
+        cubepoints.push(new vec4(1.0, 1.0, -1.0, 1.0));
+        cubepoints.push(new vec4(0.0, 0.0, 1.0, 1.0)); //blue
+        cubepoints.push(new vec4(-1.0, 1.0, -1.0, 1.0));
+        cubepoints.push(new vec4(0.0, 0.0, 1.0, 1.0)); //blue
+        cubepoints.push(new vec4(-1.0, 1.0, -1.0, 1.0));
+        cubepoints.push(new vec4(0.0, 0.0, 1.0, 1.0)); //blue
+        cubepoints.push(new vec4(-1.0, 1.0, 1.0, 1.0));
+        cubepoints.push(new vec4(0.0, 0.0, 1.0, 1.0)); //blue
+        cubepoints.push(new vec4(1.0, 1.0, 1.0, 1.0));
+        cubepoints.push(new vec4(0.0, 0.0, 1.0, 1.0)); //blue
+
+        //bottom
+        cubepoints.push(new vec4(1.0, -1.0, -1.0, 1.0));
+        cubepoints.push(new vec4(0.0, 1.0, 0.0, 1.0)); //green
+        cubepoints.push(new vec4(1.0, -1.0, 1.0, 1.0));
+        cubepoints.push(new vec4(0.0, 1.0, 0.0, 1.0)); //green
+        cubepoints.push(new vec4(-1.0, -1.0, 1.0, 1.0));
+        cubepoints.push(new vec4(0.0, 1.0, 0.0, 1.0)); //green
+        cubepoints.push(new vec4(-1.0, -1.0, 1.0, 1.0));
+        cubepoints.push(new vec4(0.0, 1.0, 0.0, 1.0)); //green
+        cubepoints.push(new vec4(-1.0, -1.0, -1.0, 1.0));
+        cubepoints.push(new vec4(0.0, 1.0, 0.0, 1.0)); //green
+        cubepoints.push(new vec4(1.0, -1.0, -1.0, 1.0));
+        cubepoints.push(new vec4(0.0, 1.0, 0.0, 1.0)); //green
+
+        for (let pt of cubepoints) {
             allPts.push(pt);
         }
     //end body
@@ -210,7 +296,6 @@ function makeGroundWheelBodyBuffer(){
     //</editor-fold>
 }
 
-//TODO Update
 function update(){
     //TODO do some animation updates here
 
@@ -244,7 +329,7 @@ function render(){
         gl.drawArrays(gl.TRIANGLES, 0, 6);    // draw the background 0-6
     //</editor-fold>
 
-    //<editor-fold desc="Draw front left wheel>
+    //<editor-fold desc="Draw front left wheel">
         //model view matrix
         mv = lookAt(new vec4(0,5,20,1), new vec4(0,0,0,1), new vec4(0,1,0,0));
 
@@ -262,7 +347,7 @@ function render(){
         gl.drawArrays(gl.TRIANGLES, 6, 96);
     //</editor-fold>
 
-    //<editor-fold desc="Draw front right wheel>
+    //<editor-fold desc="Draw front right wheel">
     //model view matrix
     mv = lookAt(new vec4(0,5,20,1), new vec4(0,0,0,1), new vec4(0,1,0,0));
 
@@ -279,12 +364,12 @@ function render(){
     gl.drawArrays(gl.TRIANGLES, 6, 96);
     //</editor-fold>
 
-    //<editor-fold desc="Draw back right wheel>
+    //<editor-fold desc="Draw back left wheel">
     //model view matrix
     mv = lookAt(new vec4(0,5,20,1), new vec4(0,0,0,1), new vec4(0,1,0,0));
 
     //multiply matrix to the right of lookAt matrix
-    mv = mv.mult(translate(1,0,3));
+    mv = mv.mult(translate(-1,0,2));
     mv = mv.mult(rotateZ(90))
     mv = mv.mult(rotateX(1))
 
@@ -296,12 +381,12 @@ function render(){
     gl.drawArrays(gl.TRIANGLES, 6, 96);
     //</editor-fold>
 
-    //<editor-fold desc="Draw back left wheel>
+    //<editor-fold desc="Draw back right wheel">
     //model view matrix
     mv = lookAt(new vec4(0,5,20,1), new vec4(0,0,0,1), new vec4(0,1,0,0));
 
     //multiply matrix to the right of lookAt matrix
-    mv = mv.mult(translate(-1,0,3));
+    mv = mv.mult(translate(1,0,2));
     mv = mv.mult(rotateZ(90))
     mv = mv.mult(rotateX(1))
 
@@ -311,6 +396,23 @@ function render(){
     gl.bindBuffer(gl.ARRAY_BUFFER, bufferId);
 
     gl.drawArrays(gl.TRIANGLES, 6, 96);
+    //</editor-fold>
+
+    //<editor-fold desc="Draw body">
+    //model view matrix
+    mv = lookAt(new vec4(0,5,20,1), new vec4(0,0,0,1), new vec4(0,1,0,0));
+
+    //multiply matrix to the right of lookAt matrix
+    mv = mv.mult(translate(0,0,0));
+
+    mv = mv.mult(rotateY(1))
+    mv = mv.mult(scalem(1, 0.25,2));
+    //send over model view matrix as a uniform
+    gl.uniformMatrix4fv(umv,false, mv.flatten());
+
+    gl.bindBuffer(gl.ARRAY_BUFFER, bufferId);
+
+    gl.drawArrays(gl.TRIANGLES, 6+96, 36);
     //</editor-fold>
 
 }
