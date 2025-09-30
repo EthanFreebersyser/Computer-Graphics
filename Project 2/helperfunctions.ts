@@ -29,7 +29,6 @@ export function initShaders(gl:WebGLRenderingContext|WebGL2RenderingContext, ver
             return -1;
         }
     }
-
     let fragElem:HTMLScriptElement = <HTMLScriptElement>document.getElementById(fragmentShaderId);
     if (!fragElem) {
         alert("Unable to load vertex shader " + fragmentShaderId);

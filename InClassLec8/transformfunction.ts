@@ -29,10 +29,14 @@ let zRotateB:boolean = false; //Rotate z
 
 
 
+
+
+
+
 let vPosition:GLint; //remember where this shader attribute is
 let vColor:GLint; //remember where the color shader attribute is
 
-import {initShaders, vec4, mat4, flatten, perspective, translate, lookAt, rotateX, rotateY, rotateZ, scalem} from '../helperfunctions.js';
+import {initShaders, vec4, mat4, flatten, perspective, translate, lookAt, rotateX, rotateY, rotateZ, scalem} from './helperfunctions.js';
 
 
 //We want some set up to happen immediately when the page loads
