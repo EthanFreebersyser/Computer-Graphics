@@ -12,7 +12,22 @@ let uproj:WebGLUniformLocation; //index of projection in shader program
 let vPosition:GLint; //shader attribute loc
 let vColor:GLint; //color shader attribute loc
 
-//TODO Add various animation parameters
+type carState = {
+    xLoc: number;
+    zLoc: number;
+    speed: number; //units per frame -forward, +backward
+    steerAngle: number; //degrees -left, +right
+    left: boolean; //are we turning left?
+    right: boolean; //are we turning right?
+    wheelSpin: number; //degrees
+    yaw: number; //degrees
+};
+
+let car: carState = {xLoc: 0, zLoc: 0, speed: 0, steerAngle: 0, left: false, right: false, wheelSpin: 0, yaw: 0};
+
+const driveSpeed: number = 2;
+const maxSteer: number = 45 ; //60 degrees
+const steerRate: number = 90; //90 deg per sec
 
 import {initShaders, vec4, vec3, mat4, flatten, perspective, translate, lookAt, rotateX, rotateY, rotateZ, scalem} from './helperfunctions.js';
 
@@ -32,9 +47,9 @@ window.onload = function init() {
     umv = gl.getUniformLocation(program, "model_view");
     uproj = gl.getUniformLocation(program, "projection");
 
-    //TODO initialize various animation parameters
-
     window.addEventListener("keydown", keyDownListener);
+
+    window.addEventListener("keyup", keyUpListener);
 
     makeGroundWheelBodyBuffer();
 
@@ -50,7 +65,35 @@ window.onload = function init() {
 
 function keyDownListener(event:KeyboardEvent) {
     switch (event.key) {
+        case "ArrowUp":
+            if(!event.repeat) car.speed = driveSpeed;
+            break;
+        case "ArrowDown":
+            if(!event.repeat) car.speed = -driveSpeed;
+            break;
+        case "ArrowLeft":
+            car.left = true;
+            break;
+        case "ArrowRight":
+            car.right = true;
+            break;
         case " ":
+            if (!event.repeat){
+                car.speed = 0;
+                car.left = false
+                car.right = false;
+            }
+            break;
+    }
+}
+
+function keyUpListener(event:KeyboardEvent) {
+    switch (event.key) {
+        case "ArrowLeft":
+            car.left = false;
+            break;
+        case "ArrowRight":
+            car.right = false;
             break;
     }
 }
@@ -95,8 +138,6 @@ function makeGroundWheelBodyBuffer(){
         const width: number = 0.125;
         const centerTop = new vec4(0, width/2, 0, 1.0);
         const centerBottom = new vec4(0, -width/2, 0, 1.0);
-        const nTop = new vec3(0, 1, 0);
-        const nBot = new vec3(0,-1, 0);
         const slices: number = 8;
 
         // two alternating color
@@ -131,7 +172,6 @@ function makeGroundWheelBodyBuffer(){
                 wheelPts.push(wheelColor1);
 
                 //triangle 2
-
                 wheelPts.push(bottomRimStart);
                 wheelPts.push(wheelColor2);
                 wheelPts.push(topRimEnd);
@@ -139,16 +179,16 @@ function makeGroundWheelBodyBuffer(){
                 wheelPts.push(topRimStart);
                 wheelPts.push(wheelColor2);
 
+            let wheelColor: vec4;
+            if (colorChanger){
+                wheelColor = wheelColor1;
+                colorChanger = !colorChanger;
+            } else {
+                wheelColor = wheelColor2
+                colorChanger = !colorChanger;
+            }
             //Top Cap
                 //triangle 3
-                let wheelColor: vec4;
-                if (colorChanger){
-                    wheelColor = wheelColor1;
-                    colorChanger = !colorChanger;
-                } else {
-                    wheelColor = wheelColor2
-                    colorChanger = !colorChanger;
-                }
                 wheelPts.push(centerTop);
                 wheelPts.push(wheelColor);
                 wheelPts.push(topRimStart);
@@ -159,11 +199,11 @@ function makeGroundWheelBodyBuffer(){
             //Bottom Cap
                 //triangle 4
                 wheelPts.push(centerBottom);
-                wheelPts.push(wheelColor2);
+                wheelPts.push(wheelColor);
                 wheelPts.push(bottomRimEnd);
-                wheelPts.push(wheelColor2);
+                wheelPts.push(wheelColor);
                 wheelPts.push(bottomRimStart);
-                wheelPts.push(wheelColor2);
+                wheelPts.push(wheelColor);
 
         }
 
@@ -297,7 +337,77 @@ function makeGroundWheelBodyBuffer(){
 }
 
 function update(){
-    //TODO do some animation updates here
+    const dt: number = 1/60;
+
+    //wheel spin
+    if (car.speed != 0 ){
+        const angVelDeg = (car.speed / 0.25) * 180 / Math.PI; //0.25 is wheel Radius
+        car.wheelSpin += (angVelDeg * dt) % 360;
+    }
+
+    //turn the wheels
+    let steerInput = 0;
+    if (car.left && !car.right) {
+        steerInput = 1;
+    } else if (car.right && !car.left) {
+        steerInput = -1;
+    }
+
+    //Steering angle degrees
+    if (steerInput != 0){
+        car.steerAngle += steerInput * steerRate * dt; //deg
+
+        if (car.steerAngle > maxSteer) car.steerAngle = maxSteer;
+        if (car.steerAngle < -maxSteer) car.steerAngle = -maxSteer;
+    }
+
+    //yaw
+    const wheelBase = 1.5;
+    if (car.speed != 0) {
+        const distance = car.speed * dt;
+        const steerRad = car.steerAngle * Math.PI / 180;
+        const yawRad   = car.yaw * Math.PI / 180;
+
+        // Forward unit vector
+        const fwdX = -Math.sin(yawRad);
+        const fwdZ = -Math.cos(yawRad);
+
+        // Get front axle world position from current center point
+        let xr = car.xLoc - (wheelBase * 0.5) * fwdX;
+        let zr = car.zLoc - (wheelBase * 0.5) * fwdZ;
+
+        //Heading change
+        const dYaw = (distance / wheelBase) * Math.tan(steerRad); // radians
+
+        // midpoint heading for translation
+        const yawMid = yawRad + 0.5 * dYaw;
+        const fwdMidX = -Math.sin(yawMid);
+        const fwdMidZ = -Math.cos(yawMid);
+
+        // Move the REAR axle along the body axis
+        xr += distance * fwdMidX;
+        zr += distance * fwdMidZ;
+
+        // Commit new heading
+        const yawNew = yawRad + dYaw;
+        car.yaw = yawNew * 180 / Math.PI;
+
+        // Recompute center point from the updated front axle
+        const fwdNewX = -Math.sin(yawNew);
+        const fwdNewZ = -Math.cos(yawNew);
+        let nextX: number = xr + (wheelBase * 0.5) * fwdNewX;
+        let nextZ: number = zr + (wheelBase * 0.5) * fwdNewZ;
+
+        if (Math.abs(nextX) > 9 || Math.abs(nextZ) > 9) {
+            car.speed = 0;
+
+            nextX = Math.max(-9, Math.min(9,nextX))
+            nextZ = Math.max(-9, Math.min(9,nextZ))
+        }
+
+        car.xLoc = nextX;
+        car.zLoc = nextZ;
+    }
 
     requestAnimationFrame(render);
 }
@@ -313,10 +423,12 @@ function render(){
 
     gl.viewport(0, 0, gl.drawingBufferWidth, gl.drawingBufferHeight);
 
+    //OG model View Matrix
+    let mvOG:mat4 = lookAt(new vec4(20,20,20,1), new vec4(0,0,0,1), new vec4(0,1,0,0));
     //<editor-fold desc="Draw Background">
         //model view matrix
         //lookAT parames: where is the camera? what is a location the camrea is looking at? what direction is up?
-        let mv:mat4 = lookAt(new vec4(0,5,20,1), new vec4(0,0,0,1), new vec4(0,1,0,0));
+        let mv:mat4 = mvOG;
 
         //multiply matrix to the right of lookAt matrix
         mv = mv.mult(scalem(10, 1,10))
@@ -331,13 +443,15 @@ function render(){
 
     //<editor-fold desc="Draw front left wheel">
         //model view matrix
-        mv = lookAt(new vec4(0,5,20,1), new vec4(0,0,0,1), new vec4(0,1,0,0));
+        mv = mvOG
 
         //multiply matrix to the right of lookAt matrix
-        mv = mv.mult(translate(-1,0,0));
-        mv = mv.mult(scalem(1, 1,1))
-        mv = mv.mult(rotateZ(90))
-        mv = mv.mult(rotateX(1))
+        mv = mv.mult(translate(car.xLoc, 0.0, car.zLoc));    // place wheel in world
+        mv = mv.mult(rotateY(car.yaw));                         // orient wheel
+        mv = mv.mult(translate(-0.5, 0, 0));          // move to this wheel hub
+        mv = mv.mult(rotateY(car.steerAngle));                 // steer about car's up axis
+        mv = mv.mult(rotateZ(90));                        // align cylinder's +Y to axle +X
+        mv = mv.mult(rotateY(car.wheelSpin));                   // spin the wheel
 
         //send over model view matrix as a uniform
         gl.uniformMatrix4fv(umv,false, mv.flatten());
@@ -348,73 +462,81 @@ function render(){
     //</editor-fold>
 
     //<editor-fold desc="Draw front right wheel">
-    //model view matrix
-    mv = lookAt(new vec4(0,5,20,1), new vec4(0,0,0,1), new vec4(0,1,0,0));
+        //model view matrix
+        mv = mvOG
 
-    //multiply matrix to the right of lookAt matrix
-    mv = mv.mult(translate(1,0,0));
-    mv = mv.mult(rotateZ(90))
-    mv = mv.mult(rotateX(1))
+        //multiply matrix to the right of lookAt matrix
+        mv = mv.mult(translate(car.xLoc, 0.0, car.zLoc));    // place car in world
+        mv = mv.mult(rotateY(car.yaw));                         // orient car
+        mv = mv.mult(translate(0.5, 0, 0));          // move to this wheel hub
+        mv = mv.mult(rotateY(car.steerAngle));                  // steer about car's up axis
+        mv = mv.mult(rotateZ(90));                        // align cylinder's +Y to axle +X
+        mv = mv.mult(rotateY(car.wheelSpin));                   // spin the wheel
 
-    //send over model view matrix as a uniform
-    gl.uniformMatrix4fv(umv,false, mv.flatten());
+        //send over model view matrix as a uniform
+        gl.uniformMatrix4fv(umv,false, mv.flatten());
 
-    gl.bindBuffer(gl.ARRAY_BUFFER, bufferId);
+        gl.bindBuffer(gl.ARRAY_BUFFER, bufferId);
 
-    gl.drawArrays(gl.TRIANGLES, 6, 96);
+        gl.drawArrays(gl.TRIANGLES, 6, 96);
     //</editor-fold>
 
     //<editor-fold desc="Draw back left wheel">
-    //model view matrix
-    mv = lookAt(new vec4(0,5,20,1), new vec4(0,0,0,1), new vec4(0,1,0,0));
+        //model view matrix
+        mv = mvOG
 
-    //multiply matrix to the right of lookAt matrix
-    mv = mv.mult(translate(-1,0,2));
-    mv = mv.mult(rotateZ(90))
-    mv = mv.mult(rotateX(1))
+        //multiply matrix to the right of lookAt matrix
+        mv = mv.mult(translate(car.xLoc, 0.0, car.zLoc));    // place car in world
+        mv = mv.mult(rotateY(car.yaw));                         // orient car
+        mv = mv.mult(translate(-0.5, 0, 1.25));          // move to this wheel hub
+        mv = mv.mult(rotateZ(90));                        // align cylinder's +Y to axle +X
+        mv = mv.mult(rotateY(car.wheelSpin));                   // spin the wheel
 
-    //send over model view matrix as a uniform
-    gl.uniformMatrix4fv(umv,false, mv.flatten());
+        //send over model view matrix as a uniform
+        gl.uniformMatrix4fv(umv,false, mv.flatten());
 
-    gl.bindBuffer(gl.ARRAY_BUFFER, bufferId);
+        gl.bindBuffer(gl.ARRAY_BUFFER, bufferId);
 
-    gl.drawArrays(gl.TRIANGLES, 6, 96);
+        gl.drawArrays(gl.TRIANGLES, 6, 96);
     //</editor-fold>
 
     //<editor-fold desc="Draw back right wheel">
-    //model view matrix
-    mv = lookAt(new vec4(0,5,20,1), new vec4(0,0,0,1), new vec4(0,1,0,0));
+        //model view matrix
+        mv = mvOG
 
-    //multiply matrix to the right of lookAt matrix
-    mv = mv.mult(translate(1,0,2));
-    mv = mv.mult(rotateZ(90))
-    mv = mv.mult(rotateX(1))
+        //multiply matrix to the right of lookAt matrix
+        mv = mv.mult(translate(car.xLoc, 0.0, car.zLoc));    // place car in world
+        mv = mv.mult(rotateY(car.yaw));                         // orient car
+        mv = mv.mult(translate(0.5, 0, 1.25));          // move to this wheel hub
+        mv = mv.mult(rotateZ(90));                        // align cylinder's +Y to axle +X
+        mv = mv.mult(rotateY(car.wheelSpin));                   // spin the wheel
+
 
     //send over model view matrix as a uniform
-    gl.uniformMatrix4fv(umv,false, mv.flatten());
+        gl.uniformMatrix4fv(umv,false, mv.flatten());
 
-    gl.bindBuffer(gl.ARRAY_BUFFER, bufferId);
+        gl.bindBuffer(gl.ARRAY_BUFFER, bufferId);
 
-    gl.drawArrays(gl.TRIANGLES, 6, 96);
+        gl.drawArrays(gl.TRIANGLES, 6, 96);
     //</editor-fold>
 
     //<editor-fold desc="Draw body">
-    //model view matrix
-    mv = lookAt(new vec4(0,5,20,1), new vec4(0,0,0,1), new vec4(0,1,0,0));
+        //model view matrix
+        mv = mvOG
 
-    //multiply matrix to the right of lookAt matrix
-    mv = mv.mult(translate(0,0,0));
+        //multiply matrix to the right of lookAt matrix
+        mv = mv.mult(translate(car.xLoc, 0.2, car.zLoc));  // place car in world
+        mv = mv.mult(rotateY(car.yaw));
+        mv = mv.mult(scalem(.45, 0.25,0.75));       // orient car
+        mv = mv.mult(translate(0, 0, 1));           // move to this wheel hub
+        mv = mv.mult(rotateZ(90));                      // align cylinder's +Y to axle +X
 
-    mv = mv.mult(rotateY(1))
-    mv = mv.mult(scalem(1, 0.25,2));
     //send over model view matrix as a uniform
-    gl.uniformMatrix4fv(umv,false, mv.flatten());
+        gl.uniformMatrix4fv(umv,false, mv.flatten());
 
-    gl.bindBuffer(gl.ARRAY_BUFFER, bufferId);
+        gl.bindBuffer(gl.ARRAY_BUFFER, bufferId);
 
-    gl.drawArrays(gl.TRIANGLES, 6+96, 36);
+        gl.drawArrays(gl.TRIANGLES, 6+96, 36);
     //</editor-fold>
 
 }
-
-
