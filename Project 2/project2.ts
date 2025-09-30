@@ -105,7 +105,7 @@ function makeGroundWheelBodyBuffer(){
     //<editor-fold desc="background pts">
     //start of the ground 0-6
         let groundPts:vec4[] = [];
-        let groundY: number = -0.5;
+        let groundY: number = -0.25;
         let groundColor:vec4 = new vec4(0.22, 0.65, 0.22, 1.0);
 
         //Triangle 1
@@ -342,7 +342,7 @@ function update(){
     //wheel spin
     if (car.speed != 0 ){
         const angVelDeg = (car.speed / 0.25) * 180 / Math.PI; //0.25 is wheel Radius
-        car.wheelSpin += (angVelDeg * dt) % 360;
+        car.wheelSpin = (car.wheelSpin + angVelDeg * dt) % 360;
     }
 
     //turn the wheels
@@ -401,8 +401,8 @@ function update(){
         if (Math.abs(nextX) > 9 || Math.abs(nextZ) > 9) {
             car.speed = 0;
 
-            nextX = Math.max(-9, Math.min(9,nextX))
-            nextZ = Math.max(-9, Math.min(9,nextZ))
+            nextX = Math.max(-10, Math.min(10,nextX))
+            nextZ = Math.max(-10, Math.min(10,nextZ))
         }
 
         car.xLoc = nextX;
@@ -424,7 +424,7 @@ function render(){
     gl.viewport(0, 0, gl.drawingBufferWidth, gl.drawingBufferHeight);
 
     //OG model View Matrix
-    let mvOG:mat4 = lookAt(new vec4(20,20,20,1), new vec4(0,0,0,1), new vec4(0,1,0,0));
+    let mvOG:mat4 = lookAt(new vec4(0,10,20,1), new vec4(0,0,0,1), new vec4(0,1,0,0));
     //<editor-fold desc="Draw Background">
         //model view matrix
         //lookAT parames: where is the camera? what is a location the camrea is looking at? what direction is up?
@@ -448,7 +448,7 @@ function render(){
         //multiply matrix to the right of lookAt matrix
         mv = mv.mult(translate(car.xLoc, 0.0, car.zLoc));    // place wheel in world
         mv = mv.mult(rotateY(car.yaw));                         // orient wheel
-        mv = mv.mult(translate(-0.5, 0, 0));          // move to this wheel hub
+        mv = mv.mult(translate(-0.5, 0, -0.75));          // move to this wheel hub
         mv = mv.mult(rotateY(car.steerAngle));                 // steer about car's up axis
         mv = mv.mult(rotateZ(90));                        // align cylinder's +Y to axle +X
         mv = mv.mult(rotateY(car.wheelSpin));                   // spin the wheel
@@ -468,7 +468,7 @@ function render(){
         //multiply matrix to the right of lookAt matrix
         mv = mv.mult(translate(car.xLoc, 0.0, car.zLoc));    // place car in world
         mv = mv.mult(rotateY(car.yaw));                         // orient car
-        mv = mv.mult(translate(0.5, 0, 0));          // move to this wheel hub
+        mv = mv.mult(translate(0.5, 0, -0.75));          // move to this wheel hub
         mv = mv.mult(rotateY(car.steerAngle));                  // steer about car's up axis
         mv = mv.mult(rotateZ(90));                        // align cylinder's +Y to axle +X
         mv = mv.mult(rotateY(car.wheelSpin));                   // spin the wheel
@@ -488,7 +488,7 @@ function render(){
         //multiply matrix to the right of lookAt matrix
         mv = mv.mult(translate(car.xLoc, 0.0, car.zLoc));    // place car in world
         mv = mv.mult(rotateY(car.yaw));                         // orient car
-        mv = mv.mult(translate(-0.5, 0, 1.25));          // move to this wheel hub
+        mv = mv.mult(translate(-0.5, 0, 0.75));          // move to this wheel hub
         mv = mv.mult(rotateZ(90));                        // align cylinder's +Y to axle +X
         mv = mv.mult(rotateY(car.wheelSpin));                   // spin the wheel
 
@@ -507,7 +507,7 @@ function render(){
         //multiply matrix to the right of lookAt matrix
         mv = mv.mult(translate(car.xLoc, 0.0, car.zLoc));    // place car in world
         mv = mv.mult(rotateY(car.yaw));                         // orient car
-        mv = mv.mult(translate(0.5, 0, 1.25));          // move to this wheel hub
+        mv = mv.mult(translate(0.5, 0, 0.75));          // move to this wheel hub
         mv = mv.mult(rotateZ(90));                        // align cylinder's +Y to axle +X
         mv = mv.mult(rotateY(car.wheelSpin));                   // spin the wheel
 
@@ -528,7 +528,7 @@ function render(){
         mv = mv.mult(translate(car.xLoc, 0.2, car.zLoc));  // place car in world
         mv = mv.mult(rotateY(car.yaw));
         mv = mv.mult(scalem(.45, 0.25,0.75));       // orient car
-        mv = mv.mult(translate(0, 0, 1));           // move to this wheel hub
+        mv = mv.mult(translate(0, 0, 0));           // move to this wheel hub
         mv = mv.mult(rotateZ(90));                      // align cylinder's +Y to axle +X
 
     //send over model view matrix as a uniform
