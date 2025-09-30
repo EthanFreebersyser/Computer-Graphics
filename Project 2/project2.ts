@@ -36,26 +36,112 @@ window.onload = function init() {
 
     //TODO Add call to keyboard listener
 
-    //TODO add call to make ground function
-
-    //TODO Add call to make wheels, car body, and buffer function
+    makeGroundWheelBodyBuffer();
 
     //background color
-    gl.clearColor(0.0, 0.0, 0.0, 1.0); //black right now
+    gl.clearColor(0.55, 0.75, 0.95, 1.0); //light blue sky
+    //gl.clearColor(0.0, 0.0, 0.0, 1.0); //Black
 
     //avoids having objects that are behind other objects show up anyway
     gl.enable(gl.DEPTH_TEST);
 
-    //TODO Uncomment when Update exists window.setInterval(update, 16); //target 60 frames per second
+    window.setInterval(update, 16); //target 60 frames per second
 };
 
 //TODO keyboard listener
 
-//TODO make ground
 
-//TODO make wheels, car body, and buffer
+//adds the ground, wheel and car body to the buffer and send to graphics card
+function makeGroundWheelBodyBuffer(){
+    let allPts:vec4[] = [];
+
+    //<editor-fold desc="background pts">
+    //start of the ground 0-6
+        let groundPts:vec4[] = [];
+        let groundY: number = -0.5;
+        let groundColor:vec4 = new vec4(0.22, 0.65, 0.22, 1.0);
+
+        //Triangle 1
+        groundPts.push(new vec4(-1.0, groundY, -1.0, 1.0));
+        groundPts.push(groundColor);
+        groundPts.push(new vec4(1.0, groundY, -1.0, 1.0));
+        groundPts.push(groundColor);
+        groundPts.push(new vec4(1.0, groundY, 1.0, 1.0));
+        groundPts.push(groundColor);
+
+        //Triangle 2
+        groundPts.push(new vec4(-1.0, groundY, -1.0, 1.0));
+        groundPts.push(groundColor);
+        groundPts.push(new vec4(1.0, groundY, 1.0, 1.0));
+        groundPts.push(groundColor);
+        groundPts.push(new vec4(-1.0, groundY, 1.0, 1.0));
+        groundPts.push(groundColor);
+
+        for (let pt of groundPts) {
+            allPts.push(pt);
+        }
+    //end of ground
+    //</editor-fold>
+
+    //<editor-fold desc="wheel pts">
+    //start wheel 6-?
+        let wheelPts:vec4[] = [];
+        //TODO add pts
+
+        for (let pt of wheelPts) {
+            allPts.push(pt);
+        }
+    //end wheel
+    //</editor-fold>
+
+    //<editor-fold desc="body pts">
+    //start body ?-?
+        let bodyPts:vec4[] = [];
+        //TODO add pts
+
+        for (let pt of bodyPts) {
+            allPts.push(pt);
+        }
+    //end body
+    //</editor-fold>
+
+
+    //<editor-fold desc="build buffer">
+    //start buffer
+        bufferId = gl.createBuffer();
+        //The buffer we want to work with
+        gl.bindBuffer(gl.ARRAY_BUFFER, bufferId);
+        //send the data to this buffer on the graphics card
+        gl.bufferData(gl.ARRAY_BUFFER, flatten(allPts), gl.STATIC_DRAW);
+
+        //Data is packed in groups of 4 floats which are 4 bytes each, 32 bytes total for position and color
+        // position            color
+        //  x   y   z     w       r    g     b    a
+        // 0-3 4-7 8-11 12-15  16-19 20-23 24-27 28-31
+
+        //associate part of data to vPosition
+        vPosition = gl.getAttribLocation(program, "vPosition");
+
+        //each position starts 32 bytes after the start of the previous one, and starts right away at index 0
+        gl.vertexAttribPointer(vPosition, 4, gl.FLOAT, false, 32, 0);
+        gl.enableVertexAttribArray(vPosition);
+
+        //associate the other part of data to vColor
+        vColor = gl.getAttribLocation(program, "vColor");
+
+        //each color starts 32 bytes after the start of the previous one, and the first color starts 16 bytes into the data
+        gl.vertexAttribPointer(vColor, 4, gl.FLOAT, false, 32, 16);
+        gl.enableVertexAttribArray(vColor);
+    //end buffer
+    //</editor-fold>
+}
 
 //TODO Update
+function update(){
+    //TODO do some animation updates here
+
+    requestAnimationFrame(render);
+}
 
 //draw a new frame
 function render(){
@@ -63,30 +149,27 @@ function render(){
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
     //projection matrices
-    let p:mat4 = perspective(45.0, canvas.clientWidth / 2 / canvas.clientHeight, 1.0, 100.0);
+    let p:mat4 = perspective(45.0, canvas.clientWidth / canvas.clientHeight, 1.0, 100.0);
     gl.uniformMatrix4fv(uproj, false, p.flatten());
 
     gl.viewport(0, 0, gl.drawingBufferWidth, gl.drawingBufferHeight);
 
-    //now set up the model view matrix and send it over as a uniform
-    //the inputs to this lookAt are to move back 20 units, point at the origin, and the positive y axis is up
-    //TODO construct a model view matrix and send it as a uniform to the vertex shader
-
     //model view matrix
     //lookAT parames: where is the camera? what is a location the camrea is looking at? what direction is up?
-    let mv:mat4 = lookAt(new vec4(0,0,20,1), new vec4(0,0,0,1), new vec4(0,1,0,0));
+    let mv:mat4 = lookAt(new vec4(0,5,20,1), new vec4(0,0,0,1), new vec4(0,1,0,0));
 
     //multiply translate matrix to the right of lookAt matric
     //TODO add this mv = mv.mult(translate(xOffset,yOffset,zOffset));
+    mv = mv.mult(scalem(10, 1,10))
 
     //send over model view matrix as a uniform
     gl.uniformMatrix4fv(umv,false, mv.flatten());
 
     gl.bindBuffer(gl.ARRAY_BUFFER, bufferId);
-    //TODO draw the geometry we previously sent over.  It's a list of XXX triangle(s),
-    //TODO we want to start at index 0, and there will be a total of XXX vertices (XXX faces with XXX vertices each)
+    //TODO draw the geometry we previously sent over.  It's a list of ??? triangle(s),
+    //TODO we want to start at index 0, and there will be a total of ??? vertices (??? faces with ??? vertices each)
 
-    gl.drawArrays(gl.TRIANGLES, 0, 36);    // draw the car
+    gl.drawArrays(gl.TRIANGLES, 0, 6);    // draw the background
 
     //TODO Add each wheel individually and the car body
 }
