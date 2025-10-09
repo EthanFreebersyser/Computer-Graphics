@@ -25,6 +25,16 @@ type carState = {
 
 let car: carState = {xLoc: 0, zLoc: 0, speed: 0, steerAngle: 0, left: false, right: false, wheelSpin: 0, yaw: 0};
 
+let headRotateLeft: boolean = false;
+let headRotateRight: boolean = false;
+let headAngle: number = 0;
+
+//Camera Vars
+let fov: number = 45; //or zoom
+let dolly: number = 20;
+let whichCam: number = 1; //default to camrea 1
+let camFocus: boolean = true; //default to center of stage
+
 const driveSpeed: number = 2;
 const maxSteer: number = 45 ; //60 degrees
 const steerRate: number = 90; //90 deg per sec
@@ -50,6 +60,9 @@ window.onload = function init() {
     window.addEventListener("keydown", keyDownListener);
 
     window.addEventListener("keyup", keyUpListener);
+
+    //only have to do this once
+    genRanObjLocs();
 
     makeGroundWheelBodyBuffer();
 
@@ -84,6 +97,58 @@ function keyDownListener(event:KeyboardEvent) {
                 car.right = false;
             }
             break;
+        case "z":
+            headRotateLeft = true;
+            break;
+        case "x":
+            headRotateRight = true;
+            break;
+        case "q":
+            if (dolly <= 50){
+                dolly += 1;
+            } else {
+                dolly = 50;
+            }
+            break;
+        case "w":
+            if (dolly >= -50){
+                dolly -= 1;
+            } else {
+                dolly = -50;
+            }
+            break;
+        case "a":
+            if (fov <= 180){
+                fov += 1;
+            } else {
+                fov = 180;
+            }
+            break;
+        case "s":
+            if (fov >= 0){
+                fov -= 1;
+            } else {
+                fov = 0;
+            }
+            break;
+        case "f":
+            camFocus = !camFocus;
+            break;
+        case "r":
+            dolly = 20;
+            fov = 45
+            camFocus = true;
+            whichCam = 1;
+            break;
+        case "1":
+            whichCam = 1;
+            break;
+        case "2":
+            whichCam = 2;
+            break;
+        case "3":
+            whichCam = 3;
+            break;
     }
 }
 
@@ -94,6 +159,12 @@ function keyUpListener(event:KeyboardEvent) {
             break;
         case "ArrowRight":
             car.right = false;
+            break;
+        case "z":
+            headRotateLeft = false;
+            break;
+        case "x":
+            headRotateRight = false;
             break;
     }
 }
@@ -339,6 +410,14 @@ function makeGroundWheelBodyBuffer(){
 function update(){
     const dt: number = 1/60;
 
+    //rotate head
+    if (headRotateLeft && !headRotateRight) {
+        headAngle += steerRate * dt; //deg
+    }
+    else if (headRotateRight && !headRotateLeft) {
+        headAngle -= steerRate * dt; //deg
+    }
+
     //wheel spin
     if (car.speed != 0 ){
         const angVelDeg = (car.speed / 0.25) * 180 / Math.PI; //0.25 is wheel Radius
@@ -349,7 +428,8 @@ function update(){
     let steerInput = 0;
     if (car.left && !car.right) {
         steerInput = 1;
-    } else if (car.right && !car.left) {
+    }
+    else if (car.right && !car.left) {
         steerInput = -1;
     }
 
@@ -417,14 +497,9 @@ function render(){
     //start by clearing any previous data for both color and depth
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
-    //projection matrices
-    let p:mat4 = perspective(45.0, canvas.clientWidth / canvas.clientHeight, 1.0, 100.0);
-    gl.uniformMatrix4fv(uproj, false, p.flatten());
-
     gl.viewport(0, 0, gl.drawingBufferWidth, gl.drawingBufferHeight);
 
-    //OG model View Matrix
-    let mvOG:mat4 = lookAt(new vec4(0,10,20,1), new vec4(0,0,0,1), new vec4(0,1,0,0));
+    let mvOG:mat4 = makeCamera();
 
     //<editor-fold desc="Draw Background">
         //model view matrix
@@ -442,33 +517,17 @@ function render(){
         gl.drawArrays(gl.TRIANGLES, 0, 6);    // draw the background 0-6
     //</editor-fold>
 
-    //drwas the wheels
     drawWheels(mvOG);
 
-    //<editor-fold desc="Draw body">
-        //model view matrix
-        mv = mvOG
+    drawBodyHeadEyes(mvOG);
 
-        //multiply matrix to the right of lookAt matrix
-        mv = mv.mult(translate(car.xLoc, 0.2, car.zLoc));  // place car in world
-        mv = mv.mult(rotateY(car.yaw));
-        mv = mv.mult(scalem(.45, 0.25,0.75));       // orient car
-        mv = mv.mult(translate(0, 0, 0));           // move to this wheel hub
-        mv = mv.mult(rotateZ(90));                      // align cylinder's +Y to axle +X
-
-    //send over model view matrix as a uniform
-        gl.uniformMatrix4fv(umv,false, mv.flatten());
-
-        gl.bindBuffer(gl.ARRAY_BUFFER, bufferId);
-
-        gl.drawArrays(gl.TRIANGLES, 6+96, 36);
-    //</editor-fold>
-
+    addSomeRandomObjects(mvOG);
 }
 
 function drawWheels(mvOG:mat4){
     let mv:mat4 = mvOG;
     //Translation locations for x and z coords for each tire
+    //0: front left, 1: front right, 2: back left, 3: back right
     let xLocs: number[] = [-0.5, 0.5, -0.5, 0.5];
     let zLocs: number[] = [-0.75, -0.75, 0.75, 0.75];
 
@@ -492,3 +551,173 @@ function drawWheels(mvOG:mat4){
         gl.drawArrays(gl.TRIANGLES, 6, 96);
     }
 }
+
+function drawBodyHeadEyes(mvOG:mat4){
+    let mv:mat4 = mvOG;
+    //Translation locations and scale factors for x, y, and z coords for each cube
+    //0: body, 1: head, 2: left eye, 3: right eye
+    let xLocs: number[] = [0, 0, -0.2, 0.2];
+    let yLocs: number[] = [0, 0.5, 0.5, 0.5];
+    let zLocs: number[] = [0, 0, -0.35, -0.35];
+    let xScale: number[] = [0.45, 0.25, 0.1, 0.1];
+    let yScale: number[] = [0.25, 0.25, 0.1, 0.1];
+    let zScale: number[] = [0.75, 0.25, 0.1, 0.1];
+
+    for (let i: number = 0; i < 4; i++){
+        //model view matrix
+        mv = mvOG
+        //multiply matrix to the right of lookAt matrix
+        mv = mv.mult(translate(car.xLoc, 0.2, car.zLoc));       //place cube in world
+        mv = mv.mult(rotateY(car.yaw));                            //orient cube in the correct direction
+
+        if (i > 0){ //only rotate the head and eyes
+            mv = mv.mult(rotateY(headAngle));                      // rotate head
+        }
+
+        mv = mv.mult(translate(xLocs[i], yLocs[i], zLocs[i]));     //move cube to correct location in the car
+        mv = mv.mult(scalem(xScale[i], yScale[i], zScale[i]));      //scale into correct sizes
+        mv = mv.mult(rotateY(i*90));                               //so it is easier to tell the different cubs apart
+
+        //send over model view matrix as a uniform
+        gl.uniformMatrix4fv(umv,false, mv.flatten());
+
+        gl.bindBuffer(gl.ARRAY_BUFFER, bufferId);
+
+        gl.drawArrays(gl.TRIANGLES, 6+96, 36);
+    }
+}
+
+function makeCamera(){
+    let mvOG: mat4;
+    let p: mat4
+    let targetDir: vec4;
+    let yawRad: number;
+    let eyeLocalY: number;
+    let eyeForward: number;
+    let camPos: vec4;
+    let forward: vec4;
+    switch (whichCam){
+        case 1: //free roaming camera
+            //projection matrices
+            p = perspective(fov, canvas.clientWidth / canvas.clientHeight, 1.0, 50.0);
+            gl.uniformMatrix4fv(uproj, false, p.flatten());
+
+            //set the target direction of the camera
+            if (camFocus){
+                targetDir = new vec4(0,0,0,1); //center of world
+            } else {
+                targetDir = new vec4(car.xLoc, 0.2, car.zLoc, 1); //center of car at any given time
+            }
+            //OG model View Matrix
+            mvOG = lookAt(new vec4(0,5,dolly,1), targetDir, new vec4(0,1,0,0));
+
+            break;
+        case 2: //viewpoint camera (between the eyes
+            //projection matrices
+            p = perspective(45, canvas.clientWidth / canvas.clientHeight, 1, 50.0);
+            gl.uniformMatrix4fv(uproj, false, p.flatten());
+
+            //Finding the Cameras position
+            yawRad = (car.yaw + headAngle) * Math.PI / 180;
+
+            eyeLocalY = 0.2 + 0.5 //car base at 0.2 + head center 0.5
+            eyeForward = 0.35; //distance of the eyes from the head center
+
+            //Rotate the local offset (0, 0.5, 0.35) by head yaw and add the cars world position
+            //for a rotation newX = oldX*cos + oldZ*sin, newZ = -oldX*sin + z*cos
+            //here the oldX = 0 and oldZ = -eyeforward
+            camPos = new vec4(car.xLoc - eyeForward * Math.sin(yawRad), eyeForward, car.zLoc - eyeForward * Math.cos(yawRad),1)
+
+            //Finding the target direction
+            //rotate the starting direction (0,0,0) by the head yaw using the same formulas as before
+            forward = new vec4(-Math.sin(yawRad), 0, -Math.cos(yawRad), 0);
+            targetDir = new vec4(camPos[0] + forward[0], camPos[1] + forward[1], camPos[2]+ forward[2], 1)
+
+            //OG model View Matrix
+            mvOG = lookAt(camPos, targetDir, new vec4(0,1,0,0));
+
+            break;
+        case 3: //chase camera
+            //projection matrices
+            p = perspective(45, canvas.clientWidth / canvas.clientHeight, 1, 50.0);
+            gl.uniformMatrix4fv(uproj, false, p.flatten());
+
+            //Finding the Cameras position
+            yawRad = car.yaw * Math.PI / 180;
+
+            const backOffset: number = 4;       //how far behind we are looking
+            const yOffset: number = 0.2 + 2; //how far above the ground are we looking. 0.2 is car base
+            const lookAhead: number = 4.0;      //how far to look forward
+            const pitchDownDeg: number = 20;    //slight downward tilt to see roof
+            const pitchDownRad: number = pitchDownDeg * Math.PI / 180;
+
+            //Rotate the local offset (0, 1.30, 4) by car yaw and add the cars world position
+            //for a rotation newX = oldX*cos + oldZ*sin, newZ = -oldX*sin + z*cos
+            //here the oldX = 0 and oldZ = -backOffset
+            const fwdX: number = -Math.sin(yawRad); //negative so we look at back of car
+            const fwdZ: number = -Math.cos(yawRad); //negative so we look at back of car
+            camPos = new vec4(car.xLoc - backOffset * fwdX, yOffset, car.zLoc - backOffset * fwdZ,1)
+
+            //finding forward direction
+            //Want to keep the horizontal heading mostly the same, but tilt the camera down
+            const horiz: number = Math.cos(pitchDownRad);
+            forward = new vec4(
+                fwdX * horiz,            // preserve yawed x direction, reduced by cos(pitch)
+                -Math.sin(pitchDownRad), // add a small negative Y to look down at the car
+                fwdZ * horiz,            // preserve yawed z direction, reduced by cos(pitch)
+                0
+            );
+
+            //Finding the target direction with a slight pitch
+            //rotate the starting direction (0,0,0) by the head yaw using the same formulas as before
+            //Look at a point, some distance lookAhead along the direction vector
+            targetDir = new vec4(camPos[0] + forward[0] * lookAhead, camPos[1] + forward[1] * lookAhead, camPos[2] + forward[2] * lookAhead, 1)
+
+            //OG model View Matrix
+            mvOG = lookAt(camPos, targetDir, new vec4(0,1,0,0));
+
+            break;
+    }
+    return mvOG
+}
+
+//<editor-fold desc="Reference Objects Generation and drawing">
+let objX: number[] = [];
+let objYScale: number[] = [];
+let objZ: number[] = [];
+let objXRot: number[] = [];
+let objYRot: number[] = [];
+let objZRot: number[] = [];
+//Generate random object locations once
+function genRanObjLocs() {
+    for (let i: number = 0; i < 10; i++) {
+        objX[i] = Math.floor(Math.random() * 20) - 10;
+        objYScale[i] = Math.random() * 2;
+        objZ[i] = Math.floor(Math.random() * 20) - 10;
+        objXRot[i] = Math.floor(Math.random() * 180);
+        objYRot[i] = Math.floor(Math.random() * 180);
+        objZRot[i] = Math.floor(Math.random() * 180);
+    }
+}
+
+function addSomeRandomObjects(mvOG:mat4){
+    let mv:mat4 = mvOG;
+    for (let i: number = 0; i < 10; i++){
+        //model view matrix
+        mv = mvOG
+
+        mv = mv.mult(translate(objX[i], 0, objZ[i]));
+        mv = mv.mult(scalem(0.75, objYScale[i], 0.75));
+        mv = mv.mult(rotateX(objXRot[i]));
+        mv = mv.mult(rotateY(objYRot[i]));
+        mv = mv.mult(rotateZ(objZRot[i]));
+
+        //send over model view matrix as a uniform
+        gl.uniformMatrix4fv(umv,false, mv.flatten());
+
+        gl.bindBuffer(gl.ARRAY_BUFFER, bufferId);
+
+        gl.drawArrays(gl.TRIANGLES, 6+96, 36);
+    }
+}
+//</editor-fold>
