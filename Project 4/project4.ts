@@ -1,4 +1,4 @@
-import {initFileShaders, vec4, vec3, mat4, flatten, perspective, translate, lookAt, rotateX, rotateY, rotateZ, scalem} from './helperfunctions.js';
+import {initFileShaders, mat4} from './helperfunctions.js';
 import {drawWheels, drawCubes, drawSpheres, genRanSphereLocs, drawBackground,} from './drawers.js';
 import {makeGround, makeWheel, makeCube, buildBuffer, makeSphere} from './shapes.js';
 import {makeCameras, makeLights} from "./lightsAndCameras.js";
@@ -65,8 +65,8 @@ let camFocus: boolean = true; //default to center of stage
 //</editor-fold>
 
 //<editor-fold desc="Light booleans">
-let headLightBool: boolean = false;
-let bigLightBool: boolean = false;
+let headLightBool: boolean = true;
+let bigLightBool: boolean = true;
 let emerLightBool: boolean = true;
 //</editor-fold>
 

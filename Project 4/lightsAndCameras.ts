@@ -158,8 +158,8 @@ export function makeLights(gl: WebGLRenderingContext, program: WebGLProgram, vie
 
     //<editor-fold desc="emer lights">
     const emerLightPositions: vec4[] = [
-        new vec4(0.0, 0.15, 0, 1),
-        new vec4(0.0, 0.15, 0, 1)
+        new vec4(0.0, 0.5, 0, 1),
+        new vec4(0.0, 0.5, 0, 1)
     ];
     const emerLightDirections: vec4[] = [
         new vec4(0,0,-1,0),
@@ -177,8 +177,8 @@ export function makeLights(gl: WebGLRenderingContext, program: WebGLProgram, vie
         pushCutoffCos(cutoffs, 30);
     }
     if (emerLightBool){
-        pushColor(colors,0.25,0.0,0.0,1);   // red
-        pushColor(colors, 0.0,0.0,0.25,1);   // blue
+        pushColor(colors,0.5,0.0,0.0,1);   // red
+        pushColor(colors, 0.0,0.0,0.5,1);   // blue
     } else {
         pushColor(colors,0,0,0,1);
         pushColor(colors, 0,0,0,1);

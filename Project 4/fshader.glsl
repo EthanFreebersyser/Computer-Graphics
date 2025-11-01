@@ -32,9 +32,9 @@ void main() {
         vec3 V = normalize(-veyepos.xyz);
         vec3 R = reflect(-L, N); // vector from light source, reflected across normal
 
-        vec3 nlight_dir = normalize(light_direction[i].xyz);
+        vec3 normal_light_dir = normalize(light_direction[i].xyz);
         vec3 light_to_frag = normalize((veyepos - light_position[i]).xyz);
-        float light_angle = dot(nlight_dir, light_to_frag);
+        float light_angle = dot(normal_light_dir, light_to_frag);
 
         if (light_angle > light_cutoff[i]){
             diff += max(dot(L,N), 0.0) * fAmbientDiffuseColor * light_color[i];
@@ -49,8 +49,8 @@ void main() {
         }
 
         fColor += diff + spec;
-        //fColor = vec4(N, 1.0);
     }
+
     vec4 amb = fAmbientDiffuseColor * ambient_light;
     fColor += amb;
 }
