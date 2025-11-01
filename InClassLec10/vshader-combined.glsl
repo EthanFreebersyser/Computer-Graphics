@@ -47,11 +47,11 @@ main()
         }
 
         color = amb + diff + spec;
-    } else if (mode == 2) {
+    } else if (mode == 2 || mode == 3) {
         gl_Position = projection * model_view * vPosition;
         fPosition = vPosition;
         fAmbientDiffuseColor = vAmbientDiffuseColor;
-        fNormal = vAmbientDiffuseColor;
+        fNormal = vNormal;
         fSpecularColor = vSpecularColor;
         fSpecularExponent = vSpecularExponent;
     }

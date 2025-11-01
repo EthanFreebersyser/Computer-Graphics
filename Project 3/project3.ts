@@ -149,6 +149,23 @@ function keyDownListener(event:KeyboardEvent) {
         case "3":
             whichCam = 3;
             break;
+        case "4":
+            gl.enable(gl.DEPTH_TEST);
+            break;
+        case "5":
+            gl.disable(gl.DEPTH_TEST);
+            break;
+        case "6":
+            gl.cullFace(gl.BACK);
+            gl.enable(gl.CULL_FACE);
+            break;
+        case "7":
+            gl.cullFace(gl.FRONT);
+            gl.enable(gl.CULL_FACE);
+            break;
+        case "8":
+            gl.disable(gl.CULL_FACE);
+            break;
     }
 }
 
