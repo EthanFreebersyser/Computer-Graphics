@@ -4,8 +4,6 @@ import {initFileShaders, perspective, vec2, vec4, mat4, flatten, lookAt, transla
 let gl:WebGLRenderingContext;
 let program:WebGLProgram;
 
-
-
 //uniform locations
 let umv:WebGLUniformLocation; //uniform for mv matrix
 let uproj:WebGLUniformLocation; //uniform for projection matrix
@@ -18,7 +16,6 @@ let p:mat4; //local projection
 let vPosition:GLint; //
 let vTexCoord:GLint;
 let uTextureSampler:WebGLUniformLocation;//this will be a pointer to our sampler2D
-
 
 //document elements
 let canvas:HTMLCanvasElement;
@@ -80,8 +77,8 @@ window.onload = function init() {
     gl.uniformMatrix4fv(uproj, false, p.flatten());
 
     //don't forget to load in the texture files to main memory
-    //initTextures();
-    makeCheckerTexture();
+    initTextures();
+    //makeCheckerTexture();
     makeSquareAndBuffer();
 
     //initialize rotation angles
@@ -108,8 +105,8 @@ window.onload = function init() {
                 break;
             case "n":
                 gl.bindTexture(gl.TEXTURE_2D, checkerTex);
-                //gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);//try different min and mag filters
-                //gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
+                gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);//try different min and mag filters
+                gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
                 break;
 
         }
