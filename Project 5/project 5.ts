@@ -1,25 +1,47 @@
 "use strict";
 
-import {initFileShaders, perspective, vec2, vec4, mat4, flatten, lookAt, translate,rotateX, rotateY} from '../helperfunctions.js';
+import {initFileShaders, perspective, vec4, mat4, lookAt, rotateX, rotateY} from '../helperfunctions.js';
 import {makeBuffer} from './makeSphereAndBuffer.js'
+import {loadColor, loadClouds, loadNight, loadSpec, loadNormal} from "./loadTextures.js";
 
-//<editor-fold desc="Variables">
+//<editor-fold desc="WebGL Variables">
 let gl:WebGLRenderingContext;
 let program:WebGLProgram;
 
 //uniform locations
 let umv:WebGLUniformLocation; //uniform for mv matrix
 let uproj:WebGLUniformLocation; //uniform for projection matrix
+let umode:WebGLUniformLocation; //lighting mode
+
+//uniform indices for light properties
+let light_position:WebGLUniformLocation;
+let light_color:WebGLUniformLocation;
+let ambient_light:WebGLUniformLocation;
 
 //matrices
-let mv:mat4; //local mv
+let mvOG:mat4; //local mv
 let p:mat4; //local projection
 
-let uTextureSampler:WebGLUniformLocation; //pointer to sampler2D
+let uColorSampler: WebGLUniformLocation;
+let uCloudSampler: WebGLUniformLocation;
+let uNightSampler: WebGLUniformLocation;
+let uNormalSampler: WebGLUniformLocation;
+let uSpecSampler: WebGLUniformLocation;
+
+let useColor: WebGLUniformLocation;
+let useClouds: WebGLUniformLocation;
+let useNight: WebGLUniformLocation;
+let useNormal: WebGLUniformLocation;
+let useSpec: WebGLUniformLocation;
 
 //document elements
 let canvas:HTMLCanvasElement;
 
+let landPts: number;
+let cloudPts: number;
+//</editor-fold>
+
+//<editor-fold desc="Input Variables">
 //interaction and rotation state
 let xAngle:number;
 let yAngle:number;
@@ -28,17 +50,24 @@ let prevMouseX:number = 0;
 let prevMouseY:number = 0;
 let zoom:number = 45;
 
+let landSpin: number = 0;
+let cloudSpin: number = 0;
+
+let colorB: number = 0;
+let cloudB: number = 0;
+let nightB: number = 0;
+let normalB: number = 0;
+let specB: number = 0;
+
+//</editor-fold>
+
+//<editor-fold desc="Texture Variables">
 //we can have multiple textures in graphics memory
-let earth:WebGLTexture;
-
-//and we need a main memory location to load the files into
-let earthImage:HTMLImageElement;
-
-
-let anisotropic_ext: EXT_texture_filter_anisotropic;
-
-
-let numOfPts:number;
+let colorT:WebGLTexture;
+let cloudT:WebGLTexture;
+let nightT:WebGLTexture;
+let normalT:WebGLTexture;
+let specT:WebGLTexture;
 
 //</editor-fold>
 
@@ -63,11 +92,23 @@ window.onload = function init() {
     gl.useProgram(program);
     umv = gl.getUniformLocation(program, "model_view");
     uproj = gl.getUniformLocation(program, "projection");
+    umode = gl.getUniformLocation(program, "mode");
+    light_position = gl.getUniformLocation(program, "light_position");
+    light_color = gl.getUniformLocation(program, "light_color");
+    ambient_light = gl.getUniformLocation(program, "ambient_light");
+    gl.uniform1i(umode, 0);
 
-    //todo
-    //note, still just one texture per object, so even though there are
-    //multiple textures total, we just need the one texture sampler on the shader side
-    uTextureSampler = gl.getUniformLocation(program, "textureSampler");//get reference to sampler2D
+    uColorSampler = gl.getUniformLocation(program, "colorSampler");
+    uCloudSampler = gl.getUniformLocation(program, "cloudSampler");
+    uNightSampler = gl.getUniformLocation(program, "nightSampler");
+    uNormalSampler = gl.getUniformLocation(program, "normalSampler");
+    uSpecSampler = gl.getUniformLocation(program, "specSampler");
+
+    useColor = gl.getUniformLocation(program, "useColor");
+    useClouds = gl.getUniformLocation(program, "useClouds");
+    useNight = gl.getUniformLocation(program, "useNight");
+    useNormal = gl.getUniformLocation(program, "useNormal");
+    useSpec = gl.getUniformLocation(program, "useSpec");
 
     //set up basic perspective viewing
     gl.viewport(0, 0, gl.drawingBufferWidth, gl.drawingBufferHeight);
@@ -77,7 +118,8 @@ window.onload = function init() {
     //load in the texture files to main memory
     initTextures();
 
-    numOfPts = makeBuffer(gl, program);
+    landPts = makeBuffer(gl, program, 180, 1);
+    cloudPts = makeBuffer(gl,program, 180, 1.025)
 
     //initialize rotation angles
     xAngle = 0;
@@ -85,11 +127,18 @@ window.onload = function init() {
 
     window.addEventListener("keydown" ,keyDownListener);
 
-    requestAnimationFrame(render);
-
+    window.setInterval(update, 16);
 };
 
-//<editor-fold desc="Input Fxns">
+function initTextures() {
+    colorT = loadColor(gl);
+    cloudT = loadClouds(gl);
+    nightT = loadNight(gl);
+    normalT = loadNormal(gl);
+    specT = loadSpec(gl);
+}
+
+//<editor-fold desc="Input Functions">
 function keyDownListener(event:KeyboardEvent) {
     switch (event.key) {
         case "ArrowDown":
@@ -102,18 +151,47 @@ function keyDownListener(event:KeyboardEvent) {
                 zoom -= 5;
             }
             break;
-        case "l":
-            gl.bindTexture(gl.TEXTURE_2D, checkerTex);
-            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);//try different min and mag filters
-            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
-            console.log("linear");
+        case "1": //Color
+            if (colorB == 1) {
+                colorB = 0;
+            } else {
+                colorB = 1;
+            }
             break;
-        case "n":
-            gl.bindTexture(gl.TEXTURE_2D, checkerTex);
-            //gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);//try different min and mag filters
-            //gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
+        case "2": //
+            if (cloudB == 1) {
+                cloudB = 0;
+            } else {
+                cloudB = 1;
+            }
             break;
-
+        case "3": //
+            if (nightB == 1) {
+                nightB = 0;
+            } else {
+                nightB = 1;
+            }
+            break;
+        case "4": //
+            if (normalB == 1) {
+                normalB = 0;
+            } else {
+                normalB = 1;
+            }
+            break;
+        case "5": //
+            if (specB == 1) {
+                specB = 0;
+            } else {
+                specB = 1;
+            }
+            break;
+        case "q":
+            gl.uniform1i(umode, 0);
+            break;
+        case "w":
+            gl.uniform1i(umode, 1);
+            break;
     }
 }
 
@@ -147,68 +225,89 @@ function mouse_up(){
 }
 //</editor-fold>
 
+function update(){
+    landSpin += 0.1;
+    cloudSpin += 0.05
 
-function initTextures() {
-    earth = gl.createTexture();
-    earthImage = new Image();
-    earthImage.onload = function() { handleTextureLoaded(earthImage, earth); };
-    earthImage.src = 'Earth.png';
-
+    render()
 }
 
-function handleTextureLoaded(image:HTMLImageElement, texture:WebGLTexture) {
-    gl.bindTexture(gl.TEXTURE_2D, texture);
-    gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, false);  //disagreement over what direction Y axis goes
-    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, image);
-    gl.generateMipmap(gl.TEXTURE_2D);
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_LINEAR);
-    anisotropic_ext = gl.getExtension('EXT_texture_filter_anisotropic');
-    gl.texParameterf(gl.TEXTURE_2D, anisotropic_ext.TEXTURE_MAX_ANISOTROPY_EXT, 4);
-    //gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
-    gl.bindTexture(gl.TEXTURE_2D, null);
-}
-
-//draw a frame
 function render(){
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
     //position camera 5 units back from origin
-    mv = lookAt(new vec4(0, 0, 5, 1), new vec4(0, 0, 0, 1), new vec4(0, 1, 0, 0));
+    mvOG = lookAt(new vec4(0, 0, 5, 1), new vec4(0, 0, 0, 1), new vec4(0, 1, 0, 0));
+
+    gl.uniform4fv(light_color, [1, 1, 1, 1]);
+    gl.uniform4fv(ambient_light, [0.1,0.1,0.1,1.0]);
 
     //rotate if the user has been dragging the mouse around
-    mv = mv.mult(rotateY(yAngle).mult(rotateX(xAngle)));
+    mvOG = mvOG.mult(rotateY(yAngle).mult(rotateX(xAngle)));
+
+    gl.uniform4fv(light_position, mvOG.mult(new vec4(5, 5, 5, 1)).flatten());
+    let mv: mat4 = mvOG.mult(rotateY(landSpin));
 
     //send the modelview matrix over
     gl.uniformMatrix4fv(umv, false, mv.flatten());
 
+    drawTextures();
+}
 
-    //make sure the appropriate texture is sitting on texture unit 0
-    //we could do this once since we only have one texture per object, but eventually you'll have multiple textures
-    //so you'll be swapping them in and out for each object
-    gl.activeTexture(gl.TEXTURE0); //we're using texture unit 0
-    gl.bindTexture(gl.TEXTURE_2D, earth); //we want domokun on that texture unit for the next object drawn
-    //when the shader runs, the sampler2D will want to know what texture unit the texture is on
-    //It's on texture unit 0, so send over the value 0
-    gl.uniform1i(uTextureSampler, 0);
+function drawTextures(){
+    //land draws
+    gl.uniform1i(useColor, colorB);
+    gl.uniform1i(useClouds, 0);
+    gl.uniform1i(useNight, nightB);
+    gl.uniform1i(useNormal, normalB);
+    gl.uniform1i(useSpec, specB);
 
-    gl.drawArrays(gl.TRIANGLES, 0, numOfPts);
-
-    /*
-    //We have transparency in this one, so enable blending and disable depth write
-    gl.enable(gl.BLEND);
-    gl.blendFunc(gl.SRC_ALPHA,gl.ONE_MINUS_SRC_ALPHA);
-    gl.depthMask(false);
-
-    mv = camera.mult(rotateY(-90).mult(translate(0,0,1)));
-    gl.uniformMatrix4fv(umv, false, mv.flatten());
-    gl.bindTexture(gl.TEXTURE_2D, logotex); //we're still talking about texture unit 0, but we want a logo on the next object drawn
-    gl.drawArrays(gl.TRIANGLE_FAN, 0, 4);
-    */
-
-
-    //and now put it back to appropriate values for opaque objects
     gl.disable(gl.BLEND);
     gl.depthMask(true);
 
+    //color
+    gl.activeTexture(gl.TEXTURE0);
+    gl.bindTexture(gl.TEXTURE_2D, colorT);
+    gl.uniform1i(uColorSampler, 0);
+
+    //night
+    gl.activeTexture(gl.TEXTURE1);
+    gl.bindTexture(gl.TEXTURE_2D, nightT);
+    gl.uniform1i(uNightSampler, 1);
+
+    //normal
+    gl.activeTexture(gl.TEXTURE2);
+    gl.bindTexture(gl.TEXTURE_2D, normalT);
+    gl.uniform1i(uNormalSampler, 2);
+
+    //spec
+    gl.activeTexture(gl.TEXTURE3);
+    gl.bindTexture(gl.TEXTURE_2D, specT);
+    gl.uniform1i(uSpecSampler, 3);
+
+    gl.drawArrays(gl.TRIANGLES, 0, landPts);
+
+    //clouds
+    if (cloudB == 1) {
+        gl.uniform1i(useColor, 0);
+        gl.uniform1i(useClouds, cloudB);
+        gl.uniform1i(useNight, 0);
+        gl.uniform1i(useNormal, 0);
+        gl.uniform1i(useSpec, 0);
+
+        let mv: mat4 = mvOG.mult(rotateY(cloudSpin));
+        //send the modelview matrix over
+        gl.uniformMatrix4fv(umv, false, mv.flatten());
+
+        gl.enable(gl.BLEND);
+        gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
+        gl.depthMask(false);
+        gl.activeTexture(gl.TEXTURE4);
+        gl.bindTexture(gl.TEXTURE_2D, cloudT);
+        gl.uniform1i(uCloudSampler, 4);
+
+        gl.drawArrays(gl.TRIANGLES, landPts, landPts + cloudPts);
+
+        gl.depthMask(true);
+        gl.disable(gl.BLEND);
+    }
 }
