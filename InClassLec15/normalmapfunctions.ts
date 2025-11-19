@@ -20,8 +20,10 @@ let p:mat4; //local projection
 let vPosition:GLint; //
 let vNormal:GLint; //actually need a normal vector to modify
 let vTangent:GLint; //need a tangent vector as well
+
 let utexmapsampler:WebGLUniformLocation;//this will be a pointer to our sampler2D
 let unormalmapsampler:WebGLUniformLocation;
+
 let uLightPosition:WebGLUniformLocation;
 let uAmbienLight:WebGLUniformLocation;
 let uLightColor:WebGLUniformLocation;

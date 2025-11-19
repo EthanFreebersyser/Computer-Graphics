@@ -9,7 +9,7 @@ out vec4  fColor;
 void main()
 {
 	//use texture coordinates to look up color for this fragment from sampler
-    fColor =texture(textureSampler, ftexCoord);
+    fColor = texture(textureSampler, ftexCoord);
 
 
 }
