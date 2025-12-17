@@ -1,0 +1,9 @@
+https://www.geeksforgeeks.org/computer-graphics/radiosity-rendering-in-computer-graphics/
+
+https://en.wikipedia.org/wiki/Radiosity_(computer_graphics)
+
+https://developer.nvidia.com/gpugems/gpugems2/part-v-image-oriented-computing/chapter-39-global-illumination-using-progressive
+
+https://web.archive.org/web/20110927010808/http://www.siggraph.org/education/materials/HyperGraph/radiosity/overview_2.html
+
+https://web.cs.wpi.edu/~matt/courses/cs563/talks/radiosity.html

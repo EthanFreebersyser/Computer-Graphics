@@ -1,4 +1,4 @@
-import {initFileShaders, perspective, vec2, vec4, mat4, flatten, lookAt, translate,rotateX, rotateY} from '../helperfunctions.js';
+import {vec4, flatten} from '../helperfunctions.js';
 
 //shader variable indices for material properties
 let vPosition:GLint;
@@ -117,18 +117,11 @@ function tangent(lat: number, lon: number): vec4 {
         return new vec4(0.0,0.0,0.0,0.0);
     }
 
-    let tx = Math.sin(lat) * Math.cos(lon);
+    let tx = Math.cos(lon);
     let ty = 0.0;
-    let tz = -Math.sin(lat) * Math.sin(lon);
+    let tz = -Math.sin(lon);
 
-    const len = Math.sqrt(tx * tx + ty * ty + tz * tz);
-
-    //normalize
-    tx /= len;
-    ty /= len;
-    tz /= len;
-
-    return new vec4(tx,ty,tz,0.0); // tangent: w = 0
+    return  (new vec4(tx,ty,tz,0.0)).normalize(); // tangent: w = 0
 }
 
 //Texture coordinates

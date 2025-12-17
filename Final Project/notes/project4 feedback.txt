@@ -1,0 +1,34 @@
+13/15 pts: Correct modeling of all objects (particularly normal
+    vectors and material properties)
+
+15/15 pts: Correct implementation of Phong lighting (code could
+    be spread between your vertex and fragment shaders as appropriate)
+
+15/15 pts: Correct implementation of Phong Shading (NOT Gouraud
+    shading that we did in our first lighting code along)
+
+10/10 pts: Correct implementation of headlights (must point in
+    correct direction based on car transforms)
+
+10/10 pts: Correct implementation of emergency lights
+
+5/ 5 pts: Correct implementation of overhead light
+
+5/ 5 pts: Correct implementation of controls
+
+10/10 pts: Project Check-in
+
+11/15 pts: Good design and coding style
+
+94/100	Total
+
+2 grace passes
+
+Comments:
+
+-Wheels don't have correct normal vectors on either side
+
+-Why are you manually re-implementing the normalize function
+    in several places (among other similar "wet" code patterns)?
+    This is part of helperfunctions and the glsl language.
+    This resulted in bulkier and redundant code overall.

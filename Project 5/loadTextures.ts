@@ -14,7 +14,6 @@ export function loadColor(gl: WebGLRenderingContext) {
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_LINEAR);
         anisotropic_ext = gl.getExtension('EXT_texture_filter_anisotropic');
         gl.texParameterf(gl.TEXTURE_2D, anisotropic_ext.TEXTURE_MAX_ANISOTROPY_EXT, 4);
-        //gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
         gl.bindTexture(gl.TEXTURE_2D, null);
     };
     colorI.src = 'textures/Earth.png';
@@ -34,7 +33,6 @@ export function loadClouds(gl: WebGLRenderingContext) {
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_LINEAR);
         anisotropic_ext = gl.getExtension('EXT_texture_filter_anisotropic');
         gl.texParameterf(gl.TEXTURE_2D, anisotropic_ext.TEXTURE_MAX_ANISOTROPY_EXT, 4);
-        //gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
         gl.bindTexture(gl.TEXTURE_2D, null);
     };
     cloudI.src = 'textures/earthcloudmap-visness.png';
@@ -54,7 +52,6 @@ export function loadNight(gl: WebGLRenderingContext) {
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_LINEAR);
         anisotropic_ext = gl.getExtension('EXT_texture_filter_anisotropic');
         gl.texParameterf(gl.TEXTURE_2D, anisotropic_ext.TEXTURE_MAX_ANISOTROPY_EXT, 4);
-        //gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
         gl.bindTexture(gl.TEXTURE_2D, null);
     };
     nightI.src = 'textures/EarthNight.png';
@@ -74,7 +71,6 @@ export function loadNormal(gl: WebGLRenderingContext) {
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_LINEAR);
         anisotropic_ext = gl.getExtension('EXT_texture_filter_anisotropic');
         gl.texParameterf(gl.TEXTURE_2D, anisotropic_ext.TEXTURE_MAX_ANISOTROPY_EXT, 4);
-        //gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
         gl.bindTexture(gl.TEXTURE_2D, null);};
     normalI.src = 'textures/EarthNormal.png';
 
@@ -93,7 +89,6 @@ export function loadSpec(gl: WebGLRenderingContext) {
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_LINEAR);
         anisotropic_ext = gl.getExtension('EXT_texture_filter_anisotropic');
         gl.texParameterf(gl.TEXTURE_2D, anisotropic_ext.TEXTURE_MAX_ANISOTROPY_EXT, 4);
-        //gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
         gl.bindTexture(gl.TEXTURE_2D, null);
     };
     specI.src = 'textures/EarthSpec.png';

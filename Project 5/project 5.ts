@@ -11,7 +11,6 @@ let program:WebGLProgram;
 //uniform locations
 let umv:WebGLUniformLocation; //uniform for mv matrix
 let uproj:WebGLUniformLocation; //uniform for projection matrix
-let umode:WebGLUniformLocation; //lighting mode
 
 //uniform indices for light properties
 let light_position:WebGLUniformLocation;
@@ -92,11 +91,9 @@ window.onload = function init() {
     gl.useProgram(program);
     umv = gl.getUniformLocation(program, "model_view");
     uproj = gl.getUniformLocation(program, "projection");
-    umode = gl.getUniformLocation(program, "mode");
     light_position = gl.getUniformLocation(program, "light_position");
     light_color = gl.getUniformLocation(program, "light_color");
     ambient_light = gl.getUniformLocation(program, "ambient_light");
-    gl.uniform1i(umode, 0);
 
     uColorSampler = gl.getUniformLocation(program, "colorSampler");
     uCloudSampler = gl.getUniformLocation(program, "cloudSampler");
@@ -186,12 +183,6 @@ function keyDownListener(event:KeyboardEvent) {
                 specB = 1;
             }
             break;
-        case "q":
-            gl.uniform1i(umode, 0);
-            break;
-        case "w":
-            gl.uniform1i(umode, 1);
-            break;
     }
 }
 
@@ -227,9 +218,9 @@ function mouse_up(){
 
 function update(){
     landSpin += 0.1;
-    cloudSpin += 0.05
+    cloudSpin += 0.05;
 
-    render()
+    render();
 }
 
 function render(){

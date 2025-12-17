@@ -1,0 +1,45 @@
+B.i = E.i + ρ.i * Sum(j=1 to n){F.i.j * B.j}
+
+B.i is used to represent the radiosity of patch i.
+    n length column vector
+
+E.i is used to represent the emitted radiosity of patch i.
+    n length column vector
+
+ρ.i is used to represent the reflectivity of patch i.
+    n length column vector
+
+F.i.j is used to represent the form factor between patches i and j.
+    n by n matrix
+
+η is the total number of patches in the scene. (known)
+
+if R = diag(ρ) be the diag matrix with ρ.i on the diagonal
+then B = E + R * F * B
+which is (I - R * F) * B = E or B = (I - R * F)^-1 * E
+
+LINEAR ALGEBRA OPERATIONS
+1. Matrix-Vector multiply
+    Compute: Sum(j=1 to n){F.i.j * B.j} = y.i (CO
+
+2. Vector-Vector multiply
+    Compute ρ.i * y.i = r.i (n length column vector)
+
+3. Vector Addition
+    Compute E.i + r.i = B.new.i
+
+Loop is:
+    matrix-vector multiply -> Vector-Matrix multiply -> vector addition
+
+Jacobi iteration
+given F (nxn), E (n), ρ (n)
+start with B = E
+
+    loop until converged
+        y = F * B (matrix-vector)
+        r = ρ * y (vector-vector)
+        B_new = E + r
+        if ||B_new - B|| < not good change
+            B = B_new
+        else
+            return

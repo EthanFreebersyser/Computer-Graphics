@@ -6,7 +6,9 @@
   <component name="ChangeListManager">
     <list default="true" id="33ceb0d7-3213-4b93-ae35-3944e5ff9234" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Project 2/project2.ts" beforeDir="false" afterPath="$PROJECT_DIR$/Project 2/project2.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Project 5/loadTextures.ts" beforeDir="false" afterPath="$PROJECT_DIR$/Project 5/loadTextures.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Project 5/makeSphereAndBuffer.ts" beforeDir="false" afterPath="$PROJECT_DIR$/Project 5/makeSphereAndBuffer.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Project 5/project 5.ts" beforeDir="false" afterPath="$PROJECT_DIR$/Project 5/project 5.ts" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -22,12 +24,12 @@
     &quot;assignee&quot;: &quot;EthanFreebersyser&quot;
   }
 }</component>
-  <component name="GithubPullRequestsUISettings"><![CDATA[{
-  "selectedUrlAndAccountId": {
-    "url": "https://github.com/EthanFreebersyser/Computer-Graphics.git",
-    "accountId": "95f592a5-c81a-4fe3-9b3b-1bb182213942"
+  <component name="GithubPullRequestsUISettings">{
+  &quot;selectedUrlAndAccountId&quot;: {
+    &quot;url&quot;: &quot;https://github.com/EthanFreebersyser/Computer-Graphics.git&quot;,
+    &quot;accountId&quot;: &quot;95f592a5-c81a-4fe3-9b3b-1bb182213942&quot;
   }
-}]]></component>
+}</component>
   <component name="ProjectColorInfo">{
   &quot;associatedIndex&quot;: 4
 }</component>
@@ -36,26 +38,26 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent"><![CDATA[{
-  "keyToString": {
-    "ModuleVcsDetector.initialDetectionPerformed": "true",
-    "RunOnceActivity.ShowReadmeOnStart": "true",
-    "RunOnceActivity.git.unshallow": "true",
-    "git-widget-placeholder": "develop",
-    "last_opened_file_path": "C:/Users/etrep/Documents/Computer-Graphics",
-    "node.js.detected.package.eslint": "true",
-    "node.js.detected.package.tslint": "true",
-    "node.js.selected.package.eslint": "(autodetect)",
-    "node.js.selected.package.tslint": "(autodetect)",
-    "nodejs_package_manager_path": "npm",
-    "ts.external.directory.path": "C:\\Program Files\\JetBrains\\WebStorm 2025.2.2\\plugins\\javascript-plugin\\jsLanguageServicesImpl\\external",
-    "vue.rearranger.settings.migration": "true"
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;ModuleVcsDetector.initialDetectionPerformed&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;main&quot;,
+    &quot;last_opened_file_path&quot;: &quot;C:/Users/etrep/Documents/Computer-Graphics&quot;,
+    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
+    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
+    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
+    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
+    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
+    &quot;ts.external.directory.path&quot;: &quot;C:\\Program Files\\JetBrains\\WebStorm 2025.2.2\\plugins\\javascript-plugin\\jsLanguageServicesImpl\\external&quot;,
+    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
   }
-}]]></component>
+}</component>
   <component name="SharedIndexes">
     <attachedChunks>
       <set>
-        <option value="bundled-js-predefined-d6986cc7102b-9c94529fcfe0-JavaScript-WS-252.26199.162" />
+        <option value="bundled-js-predefined-d6986cc7102b-3aa1da707db6-JavaScript-WS-252.27397.92" />
       </set>
     </attachedChunks>
   </component>
@@ -69,6 +71,8 @@
       <workItem from="1756391406639" duration="258000" />
       <workItem from="1756393156006" duration="127000" />
       <workItem from="1759208872350" duration="2726000" />
+      <workItem from="1763616178442" duration="399000" />
+      <workItem from="1764654566711" duration="55000" />
     </task>
     <servers />
   </component>
