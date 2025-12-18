@@ -4,7 +4,7 @@
     from that).  I'd suggest programmatically tesselating your geometry rather
     than attempting to hand-calculate anything.  You'll also potentially want
     to increase or decrease your tesselation level later on, so keep that in
-    mind as you do this step.  Simplify your car to a box and remove the driver if needed.
+    mind as you do this step.  Simplify your driving to a box and remove the driver if needed.
 
 1) Implement Radiosity using your sources.
 
@@ -12,6 +12,6 @@
     If the effect is too subtle, you may need to artificially amplify any
     color bleed to make it more obvious, but just amplify, don't pre-color
     your objects.  The goal is to be able to see the diffuse interreflection
-    as your red car drives by different surfaces.
+    as your red driving drives by different surfaces.
 
 2.5) include any necessary camera views to help the user see the effect.

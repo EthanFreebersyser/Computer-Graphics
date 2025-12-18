@@ -1,7 +1,7 @@
 import {patches, makeF, patchIndexPerVertex} from "./patches.js";
 
-export function radToRGB(): Float32Array{
-    let B: Float32Array = solveRad(10);
+export function radToRGB(F: number[][]): Float32Array{
+    let B: Float32Array = solveRad(100, F);
 
     let radRGB: Float32Array = new Float32Array(3 * patches.length);
 
@@ -16,11 +16,10 @@ export function radToRGB(): Float32Array{
     return radRGB;
 }
 
-function solveRad(iters: number): Float32Array {
+function solveRad(iters: number, F: number [][]): Float32Array {
     let B: Float32Array = new Float32Array(patches.length)
     let E: Float32Array = makeE()
     let rho: Float32Array = makeRho()
-    let F: number[][] = makeF();
 
     for (let i: number = 0; i < patches.length; i++) {
         B[i] = E[i];
@@ -43,10 +42,10 @@ function makeE(): Float32Array {
     let E: Float32Array = new Float32Array(patches.length);
 
     for (let i: number = 0; i < patches.length; i++) {
-        E[i] = 0.0;
+        E[i] = 0.1;
     }
     //light source
-    E[0] = 3.0;
+    E[0] = 20.0;
 
     return E;
 }
@@ -55,7 +54,7 @@ function makeRho(): Float32Array {
     let rho: Float32Array = new Float32Array(patches.length);
 
     for (let i: number = 0; i < patches.length; i++) {
-        rho[i] = 1.5;
+        rho[i] = 0.5;
     }
     //light source
     rho[0] = 0.0;

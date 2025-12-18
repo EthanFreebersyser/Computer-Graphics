@@ -1,5 +1,5 @@
 import {vec4, mat4, perspective, lookAt, translate, rotateY} from './helperfunctions.js';
-import {carState} from "./finalproject";
+import {car} from "./driving.js";
 
 //Camera Vars
 let mvOG: mat4;
@@ -13,22 +13,22 @@ let forward: vec4;
 //Light Vars
 let spin: number = 0;
 
-export function makeCameras(gl: WebGLRenderingContext, uproj:WebGLUniformLocation, canvas, car: carState, headAngle: number, fov: number, dolly: number, whichCam: number, camFocus: boolean){
+export function makeCameras(gl: WebGLRenderingContext, uproj:WebGLUniformLocation, canvas, headAngle: number, fov: number, dolly: number, whichCam: number, camFocus: boolean): mat4 {
     switch (whichCam){
        case 1:
-           freeCam(gl,uproj,canvas, car, fov, dolly, camFocus);
+           mvOG = freeCam(gl,uproj,canvas, fov, dolly, camFocus);
            break;
        case 2: //viewpoint camera (between the eyes)
-           eyeCam(gl, uproj, canvas, car, headAngle);
+           mvOG = eyeCam(gl, uproj, canvas, headAngle);
            break;
        case 3: //chase camera
-           chaseCam(gl, uproj, canvas, car);
+           mvOG = chaseCam(gl, uproj, canvas);
            break;
     }
     return mvOG
 }
 
-function freeCam (gl: WebGLRenderingContext, uproj:WebGLUniformLocation, canvas, car: carState, fov: number, dolly: number, camFocus: boolean){
+function freeCam (gl: WebGLRenderingContext, uproj:WebGLUniformLocation, canvas, fov: number, dolly: number, camFocus: boolean): mat4{
     //projection matrices
     p = perspective(fov, canvas.clientWidth / canvas.clientHeight, 1.0, 50.0);
     gl.uniformMatrix4fv(uproj, false, p.flatten());
@@ -37,14 +37,13 @@ function freeCam (gl: WebGLRenderingContext, uproj:WebGLUniformLocation, canvas,
     if (camFocus){
         targetDir = new vec4(0,0,0,1); //center of world
     } else {
-        targetDir = new vec4(car.xLoc, 0.2, car.zLoc, 1); //center of car at any given time
+        targetDir = new vec4(car.xLoc, 0.2, car.zLoc, 1); //center of driving at any given time
     }
     //OG model View Matrix
-    mvOG = lookAt(new vec4(0,5,dolly,1), targetDir, new vec4(0,1,0,0));
-
+    return lookAt(new vec4(0,5,dolly,1), targetDir, new vec4(0,1,0,0));
 }
 
-function eyeCam(gl: WebGLRenderingContext, uproj:WebGLUniformLocation, canvas, car: carState, headAngle: number){
+function eyeCam(gl: WebGLRenderingContext, uproj:WebGLUniformLocation, canvas, headAngle: number): mat4 {
     //projection matrices
     p = perspective(45, canvas.clientWidth / canvas.clientHeight, 1, 50.0);
     gl.uniformMatrix4fv(uproj, false, p.flatten());
@@ -52,25 +51,35 @@ function eyeCam(gl: WebGLRenderingContext, uproj:WebGLUniformLocation, canvas, c
     //Finding the Cameras position
     yawRad = (car.yaw + headAngle) * Math.PI / 180;
 
-    eyeLocalY = 0.2 + 0.5 //car base at 0.2 + head center 0.5
+    eyeLocalY = 0.2 + 0.5 //driving base at 0.2 + head center 0.5
     eyeForward = 0.35; //distance of the eyes from the head center
 
     //Rotate the local offset (0, 0.5, 0.35) by head yaw and add the cars world position
     //for a rotation newX = oldX*cos + oldZ*sin, newZ = -oldX*sin + z*cos
     //here the oldX = 0 and oldZ = -eyeforward
-    camPos = new vec4(car.xLoc - eyeForward * Math.sin(yawRad), eyeForward, car.zLoc - eyeForward * Math.cos(yawRad),1)
+    camPos = new vec4(
+        car.xLoc - eyeForward * Math.sin(yawRad),
+        eyeForward,
+        car.zLoc - eyeForward * Math.cos(yawRad),
+        1
+    );
 
     //Finding the target direction
     //rotate the starting direction (0,0,0) by the head yaw using the same formulas as before
     forward = new vec4(-Math.sin(yawRad), 0, -Math.cos(yawRad), 0);
-    targetDir = new vec4(camPos[0] + forward[0], camPos[1] + forward[1], camPos[2]+ forward[2], 1)
+    targetDir = new vec4(
+        camPos[0] + forward[0],
+        camPos[1] + forward[1],
+        camPos[2]+ forward[2],
+        1
+    );
 
     //OG model View Matrix
-    mvOG = lookAt(camPos, targetDir, new vec4(0,1,0,0));
+    return lookAt(camPos, targetDir, new vec4(0,1,0,0));
 
 }
 
-function chaseCam(gl: WebGLRenderingContext, uproj:WebGLUniformLocation, canvas, car: carState){
+function chaseCam(gl: WebGLRenderingContext, uproj:WebGLUniformLocation, canvas): mat4{
     //projection matrices
     p = perspective(45, canvas.clientWidth / canvas.clientHeight, 1, 50.0);
     gl.uniformMatrix4fv(uproj, false, p.flatten());
@@ -79,24 +88,29 @@ function chaseCam(gl: WebGLRenderingContext, uproj:WebGLUniformLocation, canvas,
     yawRad = car.yaw * Math.PI / 180;
 
     const backOffset: number = 4;       //how far behind we are looking
-    const yOffset: number = 0.2 + 2; //how far above the ground are we looking. 0.2 is car base
+    const yOffset: number = 0.2 + 2; //how far above the ground are we looking. 0.2 is driving base
     const lookAhead: number = 4.0;      //how far to look forward
     const pitchDownDeg: number = 20;    //slight downward tilt to see roof
     const pitchDownRad: number = pitchDownDeg * Math.PI / 180;
 
-    //Rotate the local offset (0, 1.30, 4) by car yaw and add the cars world position
+    //Rotate the local offset (0, 1.30, 4) by driving yaw and add the cars world position
     //for a rotation newX = oldX*cos + oldZ*sin, newZ = -oldX*sin + z*cos
     //here the oldX = 0 and oldZ = -backOffset
-    const fwdX: number = -Math.sin(yawRad); //negative so we look at back of car
-    const fwdZ: number = -Math.cos(yawRad); //negative so we look at back of car
-    camPos = new vec4(car.xLoc - backOffset * fwdX, yOffset, car.zLoc - backOffset * fwdZ,1)
+    const fwdX: number = -Math.sin(yawRad); //negative so we look at back of driving
+    const fwdZ: number = -Math.cos(yawRad); //negative so we look at back of driving
+    camPos = new vec4(
+        car.xLoc - backOffset * fwdX,
+        yOffset,
+        car.zLoc - backOffset * fwdZ,
+        1
+    );
 
     //finding forward direction
     //Want to keep the horizontal heading mostly the same, but tilt the camera down
     const horiz: number = Math.cos(pitchDownRad);
     forward = new vec4(
         fwdX * horiz,            // preserve yawed x direction, reduced by cos(pitch)
-        -Math.sin(pitchDownRad), // add a small negative Y to look down at the car
+        -Math.sin(pitchDownRad), // add a small negative Y to look down at the driving
         fwdZ * horiz,            // preserve yawed z direction, reduced by cos(pitch)
         0
     );
@@ -104,20 +118,25 @@ function chaseCam(gl: WebGLRenderingContext, uproj:WebGLUniformLocation, canvas,
     //Finding the target direction with a slight pitch
     //rotate the starting direction (0,0,0) by the head yaw using the same formulas as before
     //Look at a point, some distance lookAhead along the direction vector
-    targetDir = new vec4(camPos[0] + forward[0] * lookAhead, camPos[1] + forward[1] * lookAhead, camPos[2] + forward[2] * lookAhead, 1)
+    targetDir = new vec4(
+        camPos[0] + forward[0] * lookAhead,
+        camPos[1] + forward[1] * lookAhead,
+        camPos[2] + forward[2] * lookAhead,
+        1
+    );
 
     //OG model View Matrix
-    mvOG = lookAt(camPos, targetDir, new vec4(0,1,0,0));
+    return lookAt(camPos, targetDir, new vec4(0,1,0,0));
 }
 
-export function makeLights(gl: WebGLRenderingContext, program: WebGLProgram, view: mat4, car: carState, headLightBool: boolean, bigLightBool: boolean, emerLightBool: boolean){
+export function makeLights(gl: WebGLRenderingContext, program: WebGLProgram, view: mat4, headLightBool: boolean, bigLightBool: boolean, emerLightBool: boolean){
     const eyePositions: number[] = [];
     const colors: number[] = [];
     const eyeDirections: number[] = [];
     const cutoffs: number[] = [];
 
     //<editor-fold desc="headlights">
-    //make the car's model matrix, then place lights using local positions:
+    //make the driving's model matrix, then place lights using local positions:
     const model: mat4 = translate(car.xLoc, 0.2, car.zLoc).mult(rotateY(car.yaw));
 
     const headLightPositions: vec4[] = [
@@ -130,8 +149,8 @@ export function makeLights(gl: WebGLRenderingContext, program: WebGLProgram, vie
     ]; // w=0 for directions
 
     for (let i: number = 0; i < 2; i++){
-        const worldPosition: vec4 = model.mult(headLightPositions[i]);      // car-local -> world
-        const worldDirection: vec4 = model.mult(headLightDirections[i]);    // car-local dir -> world (w=0)
+        const worldPosition: vec4 = model.mult(headLightPositions[i]);      // driving-local -> world
+        const worldDirection: vec4 = model.mult(headLightDirections[i]);    // driving-local dir -> world (w=0)
         pushPosEye(view, worldPosition, eyePositions);                      // world -> eye
         pushDirEye(view, worldDirection, eyeDirections);                    // world -> eye
         pushCutoffCos(cutoffs, 10);
@@ -169,9 +188,9 @@ export function makeLights(gl: WebGLRenderingContext, program: WebGLProgram, vie
     spin += 1;
     const spinM:mat4 = rotateY(spin);
     for (let i: number = 0; i < 2;i++){
-        const worldPosition: vec4 = model.mult(emerLightPositions[i]);      // car-local -> world
+        const worldPosition: vec4 = model.mult(emerLightPositions[i]);      // driving-local -> world
         const localDirection: vec4 = spinM.mult(emerLightDirections[i]);
-        const worldDirection: vec4 = model.mult(localDirection);    // car-local dir -> world (w=0)
+        const worldDirection: vec4 = model.mult(localDirection);    // driving-local dir -> world (w=0)
         pushPosEye(view, worldPosition, eyePositions);                      // world -> eye
         pushDirEye(view, worldDirection, eyeDirections);                    // world -> eye
         pushCutoffCos(cutoffs, 30);

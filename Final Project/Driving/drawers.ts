@@ -1,6 +1,6 @@
-import {mat4, translate, rotateY, rotateZ, scalem} from './helperfunctions.js';
+import {mat4, translate, rotateY, rotateZ, scalem, flatten} from './helperfunctions.js';
 
-import {car} from './finalproject.js';
+import {car} from './driving.js';
 import {objR, objB, objG} from './shapes.js'
 
 export function drawWheels(mvOG:mat4,gl: WebGLRenderingContext, umv: WebGLUniformLocation, bufferId: WebGLBuffer, startIndex: number, countLength: number, vAmbientDiffuseColor: GLint, vSpecularColor: GLint, vSpecularExponent: GLint) {
@@ -23,7 +23,7 @@ export function drawWheels(mvOG:mat4,gl: WebGLRenderingContext, umv: WebGLUnifor
         mv = mv.mult(rotateY(car.yaw));                           // orient wheel
         mv = mv.mult(translate(xLocs[i], 0, zLocs[i]));        // move to this wheel hub
         if (i < 2){ //only steer on the front two tires
-            mv = mv.mult(rotateY(car.steerAngle));                // steer about car's up axis
+            mv = mv.mult(rotateY(car.steerAngle));                // steer about driving's up axis
         }
         mv = mv.mult(rotateZ(90));                          // align cylinder's +Y to axle +X
         mv = mv.mult(rotateY(car.wheelSpin));                     // spin the wheel
@@ -42,10 +42,11 @@ export function drawBody(mvOG:mat4,gl: WebGLRenderingContext, umv: WebGLUniformL
     //white highlights and kinda shiny
     gl.vertexAttrib4fv(vSpecularColor, [1.0, 1.0, 1.0, 1.0]);
     gl.vertexAttrib1f(vSpecularExponent, 15.0);
-    //different ambinent colors of the car body, head, eyes, and headlights
+    //different ambinent colors of the driving body, head, eyes, and headlights
     const ambColors: number[][] = [[1,0,0,1], [1,1,0,1], [0,1,1,1], [1,0,1,1], [0,1,0,1], [0,0,1,1]];
 
-    for (let i: number = 0; i < 6; i++){
+    let numCubes: number = 6;
+    for (let i: number = 0; i < numCubes; i++){
         //model view matrix
         mv = mvOG
         //
@@ -64,7 +65,7 @@ export function drawBody(mvOG:mat4,gl: WebGLRenderingContext, umv: WebGLUniformL
 
         gl.bindBuffer(gl.ARRAY_BUFFER, bufferId);
 
-        gl.drawArrays(gl.TRIANGLES, startIndex + countLength / 6 * i, countLength / 6);
+        gl.drawArrays(gl.TRIANGLES, startIndex + countLength / numCubes * i, countLength / numCubes);
     }
 }
 
@@ -98,7 +99,7 @@ export function drawBackground(mvOG:mat4, gl: WebGLRenderingContext, umv: WebGLU
     //white highlights and kinda shiny
     gl.vertexAttrib4fv(vSpecularColor, [1.0, 1.0, 1.0, 1.0]);
     gl.vertexAttrib1f(vSpecularExponent, 15.0);
-    //different ambinent colors of the car body, head, eyes, and headlights
+    //different ambinent colors of the driving body, head, eyes, and headlights
     const ambColors: number[][] = [[1,0,0,1], [1,1,0,1], [0,1,1,1], [1,0,1,1], [0,1,0,1], [0,0,1,1]];
 
     for (let i: number = 0; i < 6; i++){

@@ -8,7 +8,7 @@ in vec4 fAmbientDiffuseColor;
 in vec4 fSpecularColor;
 in float fSpecularExponent;
 
-flat in int fPatchIndex;
+in vec3 fRadColor;
 
 uniform mat4 model_view;
 uniform mat4 projection;
@@ -19,8 +19,6 @@ uniform vec3 light_direction[5];
 uniform float light_cutoff[5];
 uniform vec4 ambient_light;
 
-const int max_patchs = 900;
-uniform vec3 patchRad[max_patchs];
 uniform int useRad;
 
 out vec4 fColor;
@@ -30,7 +28,7 @@ void main() {
     vec4 spec = vec4(0.0);
 
     if (useRad == 1) {
-        vec3 B = patchRad[fPatchIndex].xyz;
+        vec3 B = fRadColor;
 
         vec3 baseDiff = fAmbientDiffuseColor.rgb * B;
 

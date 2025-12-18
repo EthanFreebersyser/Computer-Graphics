@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Cornell</title>
+    <style>
+        body {
+            font-family: Arial, Helvetica, sans-serif;
+            padding: 20px;
+        }
+        .controls {
+            margin: 15px 0;
+        }
+        .controls label {
+            margin-right: 10px;
+        }
+        .controls input {
+            margin-right: 5px;
+        }
+        button {
+            padding: 8px 16px;
+            cursor: pointer;
+        }
+    </style>
+    <script type="module" src="cornell.js"></script>
+</head>
+<body>
+    <h1>Freebersyser Final Prject "Radiosity"</h1>
+    <p>WASD/Arrow keys to move, mouse drag to look around, Space/Shift for up/down, T to toggle radiosity, R to reset camera</p>
+
+    <div class="controls">
+        <label>Levels: <input typr="range" id="levels-slider" min="0" max="5" value="2"><span id="levels-value"></span></label>
+        <label>Iterations: <input type="range" id="iterations-slider" min="10" max="500" value="100" step="10"><span id="iterations-value">100</span></label>
+        <label>Light: <input type="range" id="light-slider" min="100" max="5000" value="1000" step="100"><span id="light-value">1000</span></label>
+        <button id="rebuild-btn">Rebuild</button>
+    </div>
+
+<canvas id="gl-canvas" width="700" height="700">
+    Sorry; your web browser doesn't support HTML5's canvas element.
+</canvas>
+</body>
+</html>

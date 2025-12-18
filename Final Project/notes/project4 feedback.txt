@@ -8,7 +8,7 @@
     shading that we did in our first lighting code along)
 
 10/10 pts: Correct implementation of headlights (must point in
-    correct direction based on car transforms)
+    correct direction based on driving transforms)
 
 10/10 pts: Correct implementation of emergency lights
 

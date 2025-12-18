@@ -13,19 +13,13 @@ export let objR: number[] = [];
 export let objG: number[] = [];
 export let objB: number[] = [];
 
-
 import {vec4, flatten, mat4, translate, rotateY, scalem} from './helperfunctions.js';
 import {patches, patchIndexPerVertex} from "./patches.js";
-import {car} from './finalproject.js';
+import {car} from './driving.js';
 
 export function bodyPtsToModel(levels: number): number {
     let modelOG:mat4 = new mat4();
     let cube: vec4[];
-
-    makeLightPatch(new vec4(0, 0, 0, 1),
-        new vec4(0, -1, 0, 0),
-        2
-    );
 
     //Translation locations and scale factors for x, y, and z coords for each cube
     //0: body, 1: head, 2: left eye, 3: right eye 4: left headlight 5: right headlight
@@ -37,37 +31,37 @@ export function bodyPtsToModel(levels: number): number {
     let zScale: number[] = [0.75, 0.25, 0.1, 0.1, 0.08, 0.08];
 
     //Car
-    for (let i: number = 0; i < 6; i++){
+    let numCubes: number = 1;
+    for (let i: number = 0; i < numCubes; i++){
         cube = makeCube(levels, 1);
         let model: mat4 = modelOG;
 
-        //multiply matrix to the right of lookAt matrix
-        model = model.mult(translate(car.xLoc, 0.2, car.zLoc));       //place cube in world
-        model = model.mult(rotateY(car.yaw));                            //orient cube in the correct direction
-
-        model = model.mult(translate(xLocs[i], yLocs[i], zLocs[i]));     //move cube to correct location in the car
-        model = model.mult(scalem(xScale[i], yScale[i], zScale[i]));      //scale into correct sizes
+        model = model.mult(translate(car.xLoc, 0.2, car.zLoc));
+        model = model.mult(rotateY(car.yaw));
+        model = model.mult(translate(xLocs[i], yLocs[i], zLocs[i]));
+        model = model.mult(scalem(xScale[i], yScale[i], zScale[i]));
 
         const numVerts: number = cube.length / 2
         const numTris: number = numVerts / 3
 
-        pushPatches(numTris, cube);
+        pushPatches(numTris, cube, model);
 
         for (let pt of cube) {
             pts.push(model.mult(pt));
         }
     }
 
-    return 6 * cube.length / 2;
+    return numCubes * cube.length / 2;
 
 }
 
 export function randPtsToModel(levels: number): number {
     let modelOG:mat4 = new mat4();
     let cube: vec4[];
+    let numCubes: number = 2;
 
     //Random cubes
-    for (let i: number = 0; i < 2; i++){
+    for (let i: number = 0; i < numCubes; i++){
         cube = makeCube(levels, 1);
         let model: mat4 = modelOG;
 
@@ -77,7 +71,7 @@ export function randPtsToModel(levels: number): number {
         const numVerts: number = cube.length / 2
         const numTris: number = numVerts / 3
 
-        pushPatches(numTris, cube);
+        pushPatches(numTris, cube, model);
 
         for (let pt of cube) {
             pts.push(model.mult(pt));
@@ -85,7 +79,7 @@ export function randPtsToModel(levels: number): number {
 
     }
 
-    return 2 * cube.length / 2;
+    return numCubes * cube.length / 2; //I understand that these negate themselfs right now
 }
 
 export function backPtsToModel(levels: number): number {
@@ -95,13 +89,13 @@ export function backPtsToModel(levels: number): number {
     cube = makeCube(levels, -1);
     let model: mat4 = modelOG;
 
-    model = model.mult(scalem(10, 10,10))
+    model = model.mult(scalem(5, 5,5))
     model = model.mult(translate(0, 0.97,0))
 
     const numVerts: number = cube.length / 2
     const numTris: number = numVerts / 3
 
-    pushPatches(numTris, cube);
+    pushPatches(numTris, cube, model);
 
     for (let pt of cube) {
         pts.push(model.mult(pt));
@@ -121,16 +115,19 @@ export function genRanCubeLocs(){
     }
 }
 
-function pushPatches(numTris: number, verts: vec4[]) {
+function pushPatches(numTris: number, verts: vec4[], model: mat4) {
     for (let i: number = 0; i < numTris; i++) {
         const v0I: number = 3 * i;
 
-        const normal: vec4 = verts[2 * v0I + 1];
+        //the local normal (beofre model transform)
+        const normal: vec4 = model.mult(verts[2 * v0I + 1]);
+        normal[3] = 0;
+        normal.normalize();
 
         const tri: Triangle = {
-            v1: verts[2 * v0I],
-            v2: verts[2 * (v0I + 1)],
-            v3: verts[2 * (v0I + 2)],
+            v1: model.mult(verts[2 * v0I]),
+            v2: model.mult(verts[2 * (v0I + 1)]),
+            v3: model.mult(verts[2 * (v0I + 2)]),
         };
 
         const center: vec4 = getCenter(tri);
@@ -266,10 +263,7 @@ export function buildBuffer(gl: WebGLRenderingContext, bufferId: WebGLBuffer, vP
 }
 
 export function makeLightPatch(center: vec4, normal: vec4, area: number) {
-    const lightIndex: number = patches.length; // should be 0 if called first
     patches.push({ center, normal, area });
-
-    patchIndexPerVertex.push(lightIndex);
 }
 
 //<editor-fold desc="Triangle Helpers">

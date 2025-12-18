@@ -9,7 +9,7 @@ in vec4 vNormal;
 in vec4 vSpecularColor;
 in float vSpecularExponent; //note this is a float, not a vec4
 
-in float vPatchIndex;
+in vec3 vRadColor;
 
 //Vertex outs
 out vec4 fPosition;
@@ -18,7 +18,7 @@ out vec4 fNormal;
 out vec4 fSpecularColor;
 out float fSpecularExponent; //note this is a float, not a vec4
 
-flat out int fPatchIndex;
+out vec3 fRadColor;
 
 uniform mat4 model_view;
 uniform mat4 projection;
@@ -36,6 +36,6 @@ main()
     fSpecularColor = vSpecularColor;
     fSpecularExponent = vSpecularExponent;
 
-    fPatchIndex = int(vPatchIndex);
+    fRadColor = vRadColor;
 
 }

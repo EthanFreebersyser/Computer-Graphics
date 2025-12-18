@@ -16,13 +16,13 @@ export function makeF(): number[][] {
 
     for (let i: number = 0; i < numOfPatchs; i++) {
         const Pi: vec4 = patches[i].center;
-        const Ni: vec4 = patches[i].normal;
+        const Ni: vec4 = patches[i].normal.normalize();
 
         for (let j: number = 0; j < numOfPatchs; j++) {
             if (i === j) continue;
 
             const Pj: vec4 = patches[j].center;
-            const Nj: vec4 = patches[j].normal;
+            const Nj: vec4 = patches[j].normal.normalize();
 
             const dx: number = Pj[0] - Pi[0];
             const dy: number = Pj[1] - Pi[1];
@@ -40,6 +40,11 @@ export function makeF(): number[][] {
 
             const geomTerm: number = (cosThetaI * cosThetaJ) / (Math.PI * r * r);
             F[i][j] = geomTerm * patches[j].area;
+
+            if (isNaN(F[i][j])) {
+                console.error(`NaN in F[${i}][${j}]: r=${r}, area=${patches[j].area}, cosThetaI=${cosThetaI}, cosThetaJ=${cosThetaJ}`);
+                F[i][j] = 0;
+            }
         }
     }
 

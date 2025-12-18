@@ -3,7 +3,7 @@ import {drawWheels, drawBody, drawRand, drawBackground} from './drawers.js';
 import {makeWheel, bodyPtsToModel, randPtsToModel, backPtsToModel, buildBuffer, genRanCubeLocs, makeLightPatch} from './shapes.js';
 import {makeCameras, makeLights} from "./lightsAndCameras.js";
 import {radToRGB} from "./radiosity.js";
-import {patchIndexPerVertex} from "./patches.js";
+import {patchIndexPerVertex, makeF} from "./patches.js";
 
 "use strict";
 
@@ -60,7 +60,7 @@ const steerRate: number = 90; //90 deg per sec
 //</editor-fold>
 
 //<editor-fold desc="Camera variables">
-let fov: number = 45; //or zoom
+let fov: number = 20; //or zoom
 let dolly: number = 10;
 let whichCam: number = 1; //default to camrea 1
 let camFocus: boolean = true; //default to center of stage
@@ -73,11 +73,10 @@ let emerLightBool: boolean = true;
 //</editor-fold>
 
 //<editor-fold desc="Radiosity Vars">
-let levels: number = 1;
+let levels: number = 4;
 let radBool: boolean = true;
 let useRad:WebGLUniformLocation;
-let patchRad:WebGLUniformLocation;
-let vPatchIndex: GLint;
+let vRadColor: GLint;
 let radRGB: Float32Array;
 //</editor-fold>
 
@@ -97,7 +96,7 @@ window.onload = function init() {
     gl.enable(gl.DEPTH_TEST);
 
     //Take vertex and fragment shaders and compile them into a shader program
-    program = initFileShaders(gl, "./shaders/vshader.glsl", "./shaders/fshader.glsl");
+    program = initFileShaders(gl, "../shaders/vshader.glsl", "../shaders/fshader.glsl");
     gl.useProgram(program);
 
     //<editor-fold desc="Getting uniform locations">
@@ -111,8 +110,7 @@ window.onload = function init() {
     vSpecularExponent = gl.getAttribLocation(program, "vSpecularExponent");
 
     useRad = gl.getUniformLocation(program, "useRad");
-    patchRad = gl.getUniformLocation(program, "patchRad");
-    vPatchIndex = gl.getAttribLocation(program, "vPatchIndex");
+    vRadColor = gl.getAttribLocation(program, "vRadColor");
     //</editor-fold>
 
     window.addEventListener("keydown", keyDownListener);
@@ -122,22 +120,23 @@ window.onload = function init() {
     //only have to do this once
     genRanCubeLocs();
 
-    makeLightPatch(new vec4(0, 5, 0, 1),
+    makeLightPatch(
+        new vec4(0, 5, 0, 1),
         new vec4(0, -1, 0, 0),
-        2
+        1
     );
 
 
     // numWheelPts =  makeWheel(8);
     numWheelPts = 0
 
-    numBodyPts = bodyPtsToModel(levels);
+    numBodyPts = bodyPtsToModel(levels - 2);
     console.log("body pts: ", numBodyPts);
     // numBodyPts = 0;
 
-    numRandPts = randPtsToModel(levels);
-    console.log("Rand pts: ", numRandPts);
-    // numRandPts = 0;
+    //numRandPts = randPtsToModel(levels);
+    //console.log("Rand pts: ", numRandPts);
+    numRandPts = 0;
 
     numBackPts = backPtsToModel(levels);
     console.log("back pts: ", numBackPts);
@@ -145,18 +144,31 @@ window.onload = function init() {
 
     buildBuffer(gl, bufferId, vPosition, vNormal);
 
+    let F: number[][] = makeF();
     //<editor-fold desc="Radiosity">
-    if (!radRGB) {
-        radRGB = radToRGB();
-    }
+    radRGB = radToRGB(F);
+
     console.log("radRGB:", radRGB);
+
+    const radPerVertex = new Float32Array(patchIndexPerVertex.length * 3);
+
+    for (let v: number = 0; v < patchIndexPerVertex.length; v++) {
+        const p: number = patchIndexPerVertex[v];       // patch index for this vertex
+        radPerVertex[3*v+0] = radRGB[3*p+0];
+        radPerVertex[3*v+1] = radRGB[3*p+1];
+        radPerVertex[3*v+2] = radRGB[3*p+2];
+    }
+
+    const radBuf: WebGLBuffer = gl.createBuffer();
+    gl.bindBuffer(gl.ARRAY_BUFFER, radBuf);
+    gl.bufferData(gl.ARRAY_BUFFER, radPerVertex, gl.STATIC_DRAW);
+
+    gl.enableVertexAttribArray(vRadColor);
+    gl.vertexAttribPointer(vRadColor, 3, gl.FLOAT, false, 0, 0);
 
     patchIndexBuffer = gl.createBuffer();
     gl.bindBuffer(gl.ARRAY_BUFFER, patchIndexBuffer);
     gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(patchIndexPerVertex), gl.STATIC_DRAW);
-
-    gl.enableVertexAttribArray(vPatchIndex);
-    gl.vertexAttribPointer(vPatchIndex, 1, gl.FLOAT, false, 0,0);
 
     //</editor-fold>
 
@@ -361,28 +373,27 @@ function render() {
 
     gl.uniform4fv(ambient_light, [0.2, 0.2, 0.2, 1.0]);
 
-    let view: mat4 = makeCameras(gl, uproj, canvas, car, headAngle, fov, dolly, whichCam, camFocus);
+    let view: mat4 = makeCameras(gl, uproj, canvas, headAngle, fov, dolly, whichCam, camFocus);
 
     if (!radBool) {
         //Phong
         gl.uniform1i(useRad, 0.0)
-        makeLights(gl, program, view, car, headLightBool, bigLightBool, emerLightBool);
+        makeLights(gl, program, view, headLightBool, bigLightBool, emerLightBool);
     } else {
         //Rad
         gl.uniform1i(useRad, 1.0)
-        gl.uniform3fv(patchRad, radRGB)
         gl.uniform4fv(ambient_light, [0.1, 0.1, 0.1, 1.0]);
     }
 
     startIndex = 0;
-    //drawWheels(view, car, gl, umv, bufferId, startIndex, numWheelPts, vAmbientDiffuseColor, vSpecularColor, vSpecularExponent);
+    //drawWheels(view, driving, gl, umv, bufferId, startIndex, numWheelPts, vAmbientDiffuseColor, vSpecularColor, vSpecularExponent);
     startIndex += numWheelPts;
 
     drawBody(view, gl, umv, bufferId, headAngle, startIndex, numBodyPts, vAmbientDiffuseColor, vSpecularColor, vSpecularExponent);
     startIndex += numBodyPts;
 
-    drawRand(view, gl, umv, bufferId, headAngle, startIndex, numRandPts, vAmbientDiffuseColor, vSpecularColor, vSpecularExponent);
-    startIndex += numRandPts
+    //drawRand(view, gl, umv, bufferId, headAngle, startIndex, numRandPts, vAmbientDiffuseColor, vSpecularColor, vSpecularExponent);
+    //startIndex += numRandPts
 
     drawBackground(view, gl, umv, bufferId, startIndex, vAmbientDiffuseColor, vSpecularColor, vSpecularExponent, levels);
 
